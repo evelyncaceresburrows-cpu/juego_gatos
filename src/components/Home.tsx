@@ -251,11 +251,15 @@ const Home: React.FC<HomeProps> = ({ onStart, onJournal, onPerfil }) => {
                   ease: 'easeInOut',
                 },
               }}
-              className="absolute z-20 max-w-[240px]"
+              className="absolute z-20 max-w-[220px]"
               style={{
-                top: '8%',
-                right: '0',
-                transform: 'translate(40%, 0)',
+                // Posicionado FUERA del cat (arriba) para no tapar la cabeza.
+                // bottom:100% + margen lo ancla por encima del container del
+                // cat, asomando ligeramente a la derecha. La cola apunta abajo
+                // hacia el gato.
+                bottom: '100%',
+                right: '8%',
+                marginBottom: '8px',
                 background: 'rgba(255, 255, 255, 0.92)',
                 backdropFilter: 'blur(12px)',
                 color: '#1A2332',
