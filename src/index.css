@@ -5,6 +5,12 @@
 @tailwind utilities;
 
 @layer base {
+  /* Reset global de box-sizing — ningún elemento se sale del column por
+     padding/border que se sumen al width. Mobile-first safety net. */
+  * {
+    box-sizing: border-box;
+  }
+
   body {
     @apply text-ade-dark font-sans antialiased overflow-hidden select-none;
     font-family: 'Inter', sans-serif;

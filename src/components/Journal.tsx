@@ -478,7 +478,10 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
       </section>
 
       {/* BOTTOM NAV (Reference to Journal View) */}
-      <nav className="fixed bottom-0 left-0 w-full bg-ade-beige/90 backdrop-blur-xl border-t border-ade-dark/5 p-4 px-8 flex justify-between items-center z-50">
+      {/* nav cambiada de fixed → absolute: se ancla al column del juego
+          (App root tiene relative + max-w 430px) en lugar de extenderse
+          a todo el viewport en desktop. */}
+      <nav className="absolute bottom-0 left-0 w-full bg-ade-beige/90 backdrop-blur-xl border-t border-ade-dark/5 p-4 px-8 flex justify-between items-center z-50">
         <button onClick={onBack} className="flex flex-col items-center gap-1 opacity-40 hover:opacity-100 transition-opacity">
           <LayoutGrid className="w-6 h-6" />
           <span className="text-[10px] font-bold">Juego</span>

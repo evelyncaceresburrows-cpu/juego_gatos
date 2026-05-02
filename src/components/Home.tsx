@@ -76,7 +76,10 @@ const Home: React.FC<HomeProps> = ({ onStart, onJournal, onPerfil }) => {
              Project ADE
            </span>
         </div>
-        <h1 className="ade-title text-7xl md:text-8xl lg:text-9xl">ADE</h1>
+        {/* text-7xl fijo: el column es siempre 430px máx (responsive
+            mobile-first), las breakpoints md:/lg: causaban overflow en
+            desktop al evaluarse contra el viewport, no contra el column. */}
+        <h1 className="ade-title text-7xl">ADE</h1>
         <p className="mt-4 text-ade-accent font-bold tracking-[0.25em] text-xs uppercase bg-ade-accent/10 px-4 py-1.5 rounded-full inline-block">
           El gato que caza ideas
         </p>
