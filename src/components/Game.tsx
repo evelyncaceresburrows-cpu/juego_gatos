@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Timer, Zap, Pause, ChevronLeft, Target } from 'lucide-react';
+import { Timer, Zap, Pause, ChevronLeft } from 'lucide-react';
 import adeEureka from '../assets/ade/characters/ade-eureka.png';
 import adeHunt from '../assets/ade/characters/ade-hunt.png';
 import adeIdle from '../assets/ade/characters/ade-idle.png';

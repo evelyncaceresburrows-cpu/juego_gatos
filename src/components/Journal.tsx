@@ -142,9 +142,7 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
 
     const ideasHtml = ideas.length === 0
       ? '<p class="empty"><em>Aún no hay ideas guardadas.</em></p>'
-      : ideas.map(i => {
-          const sparkLow = (i.spark || '').toLowerCase();
-          return `
+      : ideas.map(i => `
             <div class="idea">
               <div class="idea-meta">
                 <span class="idea-spark">${i.spark || ''}</span>
@@ -152,8 +150,7 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
               </div>
               <div class="idea-text">${escapeHtml(i.text)}</div>
             </div>
-          `;
-        }).join('');
+          `).join('');
 
     const html = `<!DOCTYPE html>
 <html lang="es">
