@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-ade-beige text-ade-dark font-sans antialiased overflow-hidden select-none;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+  }
+  
+  h1, h2, h3 {
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+@layer components {
+  .btn-ade {
+    @apply bg-ade-gold text-ade-dark font-bold py-4 px-8 rounded-2xl shadow-[0_6px_0_0_rgba(0,0,0,0.1)] 
+           active:shadow-none active:translate-y-[6px] transition-all duration-75 uppercase tracking-wider
+           flex items-center justify-center gap-2;
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl;
+  }
+
+  .ade-title {
+    @apply text-6xl font-black tracking-tight text-ade-dark uppercase leading-none;
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  width: 100%;
+}
+
+@layer utilities {
+  .hide-scrollbar {
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* IE / Edge legacy */
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;               /* Chrome / Safari / Opera */
+  }
+}

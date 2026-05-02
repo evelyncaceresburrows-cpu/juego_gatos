@@ -1,0 +1,25 @@
+/* Mejora 01 — utilidad .hide-scrollbar
+ * Destino: src/index.css
+ * Acción: agregar este bloque al final del archivo (fuera de los @layer existentes).
+ *
+ * Qué hace:
+ *   Define la clase utilitaria .hide-scrollbar que oculta la barra de scroll
+ *   en Chrome / Safari / Opera (vía ::-webkit-scrollbar), Firefox
+ *   (scrollbar-width) e IE / Edge legacy (-ms-overflow-style), sin
+ *   desactivar el scroll en sí. Journal.tsx ya aplica esta clase a la fila
+ *   de filtros (recientes / mejores / locas / útiles) pero la utilidad no
+ *   estaba definida en ningún lado. Esto cierra el cabo suelto.
+ *
+ * No toca diseño visual: solo oculta la barra que hoy aparece como ruido.
+ */
+
+@layer utilities {
+  .hide-scrollbar {
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* IE / Edge legacy */
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;               /* Chrome / Safari / Opera */
+  }
+}

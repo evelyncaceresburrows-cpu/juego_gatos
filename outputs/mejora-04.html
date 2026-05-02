@@ -1,0 +1,29 @@
+<!--
+  Mejora 04 — metadata de index.html
+  Destino: index.html (raíz del proyecto, no src/)
+  Acción: REEMPLAZAR el archivo completo por este contenido.
+
+  Qué cambia:
+    - lang="en" → lang="es" (es el idioma real del producto).
+    - <title>gatos</title> → título de marca legible en pestañas y al compartir.
+    - <meta name="description"> nuevo, para SEO básico y vista previa de enlaces.
+    - <meta name="theme-color"> nuevo, para chrome móvil que tinta la barra superior.
+    - El favicon, el viewport y el script type="module" se mantienen tal cual.
+
+  No toca código de la app ni estilos.
+-->
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#F5EFE6" />
+    <meta name="description" content="ADE es un gato que juega contigo para ayudarte a pensar mejor." />
+    <title>ADE — El gato que caza ideas</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
