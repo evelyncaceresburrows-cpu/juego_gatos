@@ -255,63 +255,66 @@ export function getFraseAde(contexto: Contexto): string {
       ? ultimosTres[0]
       : '';
 
+  // Tono canónico (biblia visual sec. 10): frases cortas, memorables,
+  // enigmáticas. Cada una sigue siendo data-driven (alma sec. 3) — el
+  // disparador es real, solo la forma cambió a estilo Ade.
   switch (contexto) {
     case 'inicio': {
       if (p.racha >= 3)
-        return `Llevamos ${p.racha} días. Algo te engancha.`;
+        return `${p.racha} días. Volviste.`;
       if (p.sesiones > 1 && p.ideasGuardadas === 0)
-        return 'Juegas bien. Pero no guardas nada. ¿Le tienes miedo a las ideas?';
+        return 'Juegas. No guardas. Curioso.';
       if (dom === 'caos' && porcentaje(p.capturas.caos, total) > 0.5)
-        return 'Capturas mucho Caos. Te activa el desorden. Interesante.';
+        return 'Mucho Caos. Te llama.';
       if (dom === 'ritual' && porcentaje(p.capturas.ritual, total) > 0.5)
-        return 'Vuelves al Ritual. Sigues buscando estructura.';
+        return 'Ritual otra vez. Buscas forma.';
       if (tiposEvitados.includes('caos') && total > 8)
-        return 'Evitas el Caos. Le tienes miedo al desorden.';
+        return 'Sin Caos todavía. ¿Lo evitas?';
       if (tiposEvitados.includes('ritual') && total > 8)
-        return 'Evitas el Ritual. La estructura te incomoda.';
+        return 'Sin Ritual. La forma te incomoda.';
       if (velProm > 0 && velProm < 800 && total > 5)
-        return 'Vas rápido. ¿Estás pensando o solo reaccionando?';
+        return 'Vas rápido. Demasiado.';
       if (velProm > 2500 && total > 5)
         return 'Hoy vienes lento. Algo te pesa.';
       if (total > 0 && dom)
-        return `Volviste a ${dom}. Veremos si insistes.`;
-      return 'Primera vez. Vamos a ver cómo piensas.';
+        return `Volviste a ${dom.toUpperCase()}.`;
+      return 'Primera vez. Veamos.';
     }
 
     case 'captura': {
       if (tresDelMismo)
-        return `Tres ${tresDelMismo.toUpperCase()} seguidos. Estás pensando en ${nombreModo(tresDelMismo)}, no en ideas.`;
+        return `Tres ${tresDelMismo.toUpperCase()}. Insistes.`;
       if (
         ultimoTipo &&
         total > 4 &&
         porcentaje(p.capturas[ultimoTipo as TipoChispa] ?? 0, total) > 0.6
       )
-        return `Insistes en ${ultimoTipo}. Estás en bucle.`;
+        return `Insistes en ${ultimoTipo.toUpperCase()}.`;
       if (velUlt > 0 && velUlt < 500)
-        return 'Reaccionaste. No pensaste.';
+        return 'Reaccionaste, no pensaste.';
       if (velUlt > 2500)
-        return 'Lo dudaste. Eso es interesante.';
+        return 'Lo dudaste. Interesante.';
       if (total === 1)
-        return 'Primera chispa. Veamos qué eliges después.';
+        return 'Primera chispa.';
       if (total === 10)
-        return 'Diez chispas. Ya empieza a verse un patrón.';
+        return 'Diez. Empieza el patrón.';
       if (ultimoTipo)
-        return `${nombreModo(ultimoTipo)}. Lo agarraste tú, no Ade.`;
+        return `${nombreModo(ultimoTipo)}. Bien visto.`;
       return '';
     }
 
     case 'fin': {
       const tiposUsados = TIPOS.filter((t) => p.capturas[t] > 0);
       if (tiposUsados.length === 1 && total > 3)
-        return `Solo ${tiposUsados[0]} hoy. Estás en una sola frecuencia.`;
+        return `Solo ${tiposUsados[0].toUpperCase()} hoy. Una sola frecuencia.`;
       if (p.ideasGuardadas === 0 && total > 0)
-        return `Capturaste ${total} chispas. No guardaste ninguna.`;
+        return `${total} chispas. Cero ideas. Pena.`;
       if (velProm > 0 && velProm < 700 && total > 8)
-        return 'Velocidad alta, ideas cortas. Estás en modo survival.';
+        return 'Velocidad alta. Modo survival.';
       if (p.racha >= 3)
-        return `Día ${p.racha} de la racha. ¿Por qué hoy también?`;
+        return `Día ${p.racha}. Sigues.`;
       if (dom)
-        return `${dom.toUpperCase()} dominó esta sesión. Mira por qué.`;
+        return `${dom.toUpperCase()} dominó. Mira por qué.`;
       return 'Sesión cerrada. Volveremos a leerte.';
     }
 
@@ -320,18 +323,18 @@ export function getFraseAde(contexto: Contexto): string {
       // modal se abre justo después de registrar esa captura y se cierra
       // antes de la siguiente.
       switch (ultimoTipo) {
-        case 'caos':    return 'Idea desde el Caos. ¿La vas a domesticar o la dejas suelta?';
-        case 'ritual':  return 'Idea desde el Ritual. Ya tiene forma. Solo falta cumplirla.';
-        case 'eco':     return 'Esto va a resonar. ¿En quién?';
-        case 'deseo':   return 'Lo querías. Ahora dilo.';
-        case 'brillo':  return 'Sí. Eso es nuevo.';
-        case 'error':   return 'Empieza torcida. A veces así es mejor.';
-        case 'secreto': return 'No la digas todavía. Déjala fermentar.';
-        case 'ruido':   return 'Distracción útil. ¿Qué hay debajo?';
+        case 'caos':    return 'Caos guardado. Suéltalo.';
+        case 'ritual':  return 'Ritual. Cumple.';
+        case 'eco':     return 'Esto resuena.';
+        case 'deseo':   return 'Lo querías. Dilo.';
+        case 'brillo':  return 'Eso es nuevo.';
+        case 'error':   return 'Empieza torcida. Mejor.';
+        case 'secreto': return 'Déjala fermentar.';
+        case 'ruido':   return 'Distracción útil.';
       }
       if (p.ideasGuardadas === 0)
-        return 'Primera idea guardada. Todo lo demás depende de esta.';
-      return 'Otra idea. ¿Sigue tu línea o cambia de eje?';
+        return 'Primera idea. Empezamos.';
+      return 'Algo quiere salir.';
     }
   }
 }

@@ -493,7 +493,7 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
         <button
           onClick={() => {
             if (onMapa) onMapa();
-            else showToast('Mapa en construcción. Pronto.');
+            else showToast('Mapa. Pronto.');
           }}
           className="flex flex-col items-center gap-1 opacity-40 hover:opacity-100 transition-opacity"
         >
@@ -503,7 +503,7 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
         <button
           onClick={() => {
             if (onPerfil) onPerfil();
-            else showToast('Perfil: próximamente, con estilo.');
+            else showToast('Perfil. Pronto.');
           }}
           className="flex flex-col items-center gap-1 opacity-40 hover:opacity-100 transition-opacity"
         >

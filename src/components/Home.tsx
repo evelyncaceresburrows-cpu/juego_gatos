@@ -348,7 +348,7 @@ const Home: React.FC<HomeProps> = ({ onStart, onJournal, onPerfil }) => {
           </motion.button>
 
           <motion.button
-            onClick={() => showToast('Ajustes… Ade lo está pensando.')}
+            onClick={() => showToast('Ajustes. Pronto.')}
             whileHover={{ scale: 1.03, y: -1 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 400, damping: 18 }}
