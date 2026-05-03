@@ -8,6 +8,12 @@ Estás trabajando en ADE, un juego creativo centrado en un gato llamado Ade que 
 
 Ese documento define la naturaleza real del producto: ADE no es un juego casual con mascota; es un compañero creativo con inteligencia viva, disfrazado de juego. Cualquier feature de lógica debe respetar esa intención.
 
+## Lectura obligatoria antes de tocar visuales o copy de Ade
+
+**Antes de cualquier cambio que afecte la imagen, expresiones, animaciones, frases, tono o representación de Ade en cualquier pantalla — leer `contexto/ADE-biblia-visual.md`.**
+
+Ese documento es la identidad canónica del personaje: rasgos, anatomía, paleta, expresiones permitidas, prohibiciones visuales absolutas, frases oficiales, y cómo debe usarse en cada pantalla de la app. NO redibujar a Ade desde cero, NO reinterpretar — usar el asset maestro y solo variar poses/expresiones dentro de los límites de la biblia. Las frases oficiales son cortas y memorables; cualquier nueva debe respetar ese tono.
+
 ## Reglas
 
 - **NUNCA modificar el diseño visual existente.** No tocar tipografías, colores, espaciados, ilustraciones, ni el orden visual de los elementos en pantalla.
