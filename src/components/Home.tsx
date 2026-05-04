@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Sparkles, Crown, Book, Settings, Flame } from 'lucide-react';
+import { Play, Sparkles, Crown, Book, Settings, Flame, X } from 'lucide-react';
 import adeIdle from '../assets/ade/characters/ade-idle.png';
 import { getFraseAde, getPerfilCompleto } from '../systems/adeProfile';
 import { MODOS, MODOS_LIST, type ModoJuegoId } from '../systems/modos';
@@ -71,7 +71,7 @@ const Home: React.FC<HomeProps> = ({
 
   return (
     <div
-      className="relative min-h-screen flex flex-col items-center justify-between py-14 px-6 overflow-hidden"
+      className="relative min-h-screen flex flex-col items-center justify-between py-8 px-6 gap-4"
       style={{
         // Fondo crema cálido + gradiente vertical sutil para profundidad.
         // Capa base sólida + spotlight diagonal muy leve.
@@ -273,7 +273,7 @@ const Home: React.FC<HomeProps> = ({
           <img
             src={adeIdle}
             alt="Ade"
-            className="w-full h-auto max-h-[44vh] object-contain relative z-10"
+            className="w-full h-auto max-h-[36vh] object-contain relative z-10"
             style={{
               filter:
                 'drop-shadow(0 16px 24px rgba(0, 0, 0, 0.12)) drop-shadow(0 4px 8px rgba(245, 196, 0, 0.18))',
@@ -512,7 +512,7 @@ const Home: React.FC<HomeProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[300] flex items-center justify-center px-6"
+            className="fixed inset-0 z-[300] flex items-center justify-center px-6 py-6 overflow-y-auto"
             style={{ background: 'rgba(10, 10, 31, 0.78)', backdropFilter: 'blur(8px)' }}
             onClick={cerrarCelebracion}
           >
@@ -522,14 +522,28 @@ const Home: React.FC<HomeProps> = ({
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: 'spring', damping: 16, stiffness: 180 }}
               onClick={e => e.stopPropagation()}
-              className="relative max-w-[300px] w-full rounded-3xl px-7 py-8 flex flex-col items-center gap-4"
+              className="relative max-w-[300px] w-full rounded-3xl px-7 py-8 flex flex-col items-center gap-4 my-auto"
               style={{
                 background: 'linear-gradient(180deg, #FBF1D8 0%, #F5ECD7 100%)',
                 border: '2px solid rgba(245, 196, 0, 0.5)',
                 boxShadow:
                   '0 0 60px rgba(255, 214, 0, 0.4), 0 24px 48px rgba(0, 0, 0, 0.35)',
+                maxHeight: 'calc(100dvh - 3rem)',
               }}
             >
+              {/* X cerrar — esquina sup. derecha del card */}
+              <button
+                onClick={cerrarCelebracion}
+                aria-label="Cerrar"
+                className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-transform active:scale-90"
+                style={{
+                  background: 'rgba(26, 35, 50, 0.06)',
+                  border: '1px solid rgba(26, 35, 50, 0.12)',
+                }}
+              >
+                <X className="w-4 h-4 text-ade-dark/60" />
+              </button>
+
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-ade-gold fill-ade-gold" />
                 <span className="text-[10px] font-black tracking-[0.4em] uppercase text-ade-dark/55">

@@ -51,7 +51,7 @@ export default function App() {
   }, [lastScore]);
 
   return (
-    <div className="mx-auto max-w-[430px] w-full min-h-screen min-h-[100dvh] bg-ade-beige text-ade-dark overflow-hidden font-sans relative">
+    <div className="mx-auto max-w-[430px] w-full min-h-screen min-h-[100dvh] bg-ade-beige text-ade-dark overflow-x-hidden font-sans relative">
       {currentScreen === 'home' && (
         <Home
           onStart={() => setCurrentScreen('game')}
@@ -101,6 +101,10 @@ export default function App() {
           onSave={() => setCurrentScreen('journal')}
           onAnother={() => setCurrentScreen('game')}
           onShare={handleShare}
+          onHome={() => {
+            setLastScore(0);
+            setCurrentScreen('home');
+          }}
         />
       )}
     </div>

@@ -9,7 +9,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Bookmark, RotateCcw, Share2, Sparkles } from 'lucide-react';
+import { Bookmark, RotateCcw, Share2, Sparkles, X } from 'lucide-react';
 import {
   getFraseAde,
   getTipoDominante,
@@ -23,9 +23,12 @@ interface GameOverProps {
   onSave: () => void;
   onAnother: () => void;
   onShare: () => void;
+  // Opcional: si se pasa, aparece un X arriba a la izquierda + un
+  // tertiary button al pie para volver al inicio sin guardar/jugar/compartir.
+  onHome?: () => void;
 }
 
-const GameOver: React.FC<GameOverProps> = ({ score, onSave, onAnother, onShare }) => {
+const GameOver: React.FC<GameOverProps> = ({ score, onSave, onAnother, onShare, onHome }) => {
   // Las 3 frases se calculan UNA vez al montar — la pantalla es estable
   // mientras el usuario decide.
   const [frases] = useState<string[]>(() => {
@@ -64,12 +67,30 @@ const GameOver: React.FC<GameOverProps> = ({ score, onSave, onAnother, onShare }
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen flex flex-col text-white overflow-hidden relative"
+      className="min-h-screen flex flex-col text-white relative"
       style={{
         background:
           'radial-gradient(ellipse at 50% 30%, #1a1a2e 0%, #111111 70%, #0a0a0a 100%)',
       }}
     >
+      {/* Botón cerrar/Home — esquina sup. izquierda. Permite salir
+          al inicio sin guardar/jugar/compartir. Solo se muestra si
+          el caller pasó onHome. */}
+      {onHome && (
+        <button
+          onClick={onHome}
+          aria-label="Volver al inicio"
+          className="absolute top-5 left-5 z-30 w-10 h-10 rounded-full flex items-center justify-center transition-transform active:scale-90"
+          style={{
+            background: 'rgba(255, 255, 255, 0.06)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          <X className="w-5 h-5 text-white/70" />
+        </button>
+      )}
+
       {/* Sparkles decoración ambiental */}
       {[
         { top: '12%', left: '10%', delay: 0, size: 4 },
@@ -214,6 +235,16 @@ const GameOver: React.FC<GameOverProps> = ({ score, onSave, onAnother, onShare }
             <span>Compartir</span>
           </button>
         </div>
+
+        {/* Tertiary — link discreto al inicio. Solo si onHome existe. */}
+        {onHome && (
+          <button
+            onClick={onHome}
+            className="w-full py-2 text-[11px] font-bold tracking-widest uppercase text-white/45 transition-colors hover:text-white/80"
+          >
+            Volver al inicio
+          </button>
+        )}
       </motion.div>
     </motion.div>
   );
