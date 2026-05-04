@@ -1,71 +1,70 @@
 // src/components/GameOver.tsx
 //
 // Pantalla intermedia entre fin de partida y Bitácora.
-// "ADE DETECTÓ ALGO..." — 3 frases derivadas del perfil + 3 acciones.
+// "ADE DETECTÓ ALGO..." — protagoniza una lectura estructurada de 3
+// observaciones (Velocidad / Patrón / Acción) que vienen de los datos
+// crudos de la sesión que acaba de cerrar (MetricasSesion → generarLectura).
 //
-// Cumple alma sec.3 (feedback como lectura, no como felicitación) y
-// biblia sec.10 (frases cortas, memorables). Las 3 frases NO son random;
-// vienen del perfil real del usuario tras la sesión que acaba de cerrar.
+// Decisiones editoriales (informe §12 + paso 7 del plan):
+//   1. SIN bloque grande de "CHISPAS · NN" en el centro. El score interno
+//      sigue vivo (se usa en compartir, vive en localStorage), pero ya
+//      no protagoniza. Filosofía: ADE no premia con números.
+//   2. PRIMARIO ahora es "Otra ronda" — el motor de engagement honesto.
+//      "Guardar idea" se convirtió en "Ver bitácora" (más sincero: la
+//      idea ya se guardó en FusionRonda; este botón solo navega).
+//   3. La lectura no compite con CTAs. Aparece primero, los botones
+//      entran al final del stagger.
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Bookmark, RotateCcw, Share2, Sparkles, X } from 'lucide-react';
+import { Book, RotateCcw, Share2, Sparkles, X } from 'lucide-react';
+import Lectura, { type Observacion } from './Lectura';
 import {
-  getFraseAde,
-  getTipoDominante,
-  getPerfilCompleto,
-  TIPOS_CREATIVOS,
-  type TipoChispa,
-} from '../systems/adeProfile';
+  generarLectura,
+  type MetricasSesion,
+} from '../systems/lectura';
 
 interface GameOverProps {
+  /** Score interno de la sesión (no se renderiza, solo se pasa a share). */
   score: number;
-  // Métricas crudas de la sesión recién cerrada. Se usa en el Paso 7
-  // para alimentar <Lectura> (3 observaciones data-driven). En este
-  // Paso 4 se acepta como prop pero no se renderiza todavía — eso evita
-  // que el cambio de signature en App.tsx rompa el tipado.
-  metricas?: import('../systems/lectura').MetricasSesion | null;
+  /**
+   * Métricas crudas de la sesión recién cerrada. Si llegan null/undefined
+   * (caso raro y defensivo), generarLectura igual produce 3 observaciones
+   * sensatas a partir de un objeto vacío.
+   */
+  metricas?: MetricasSesion | null;
+  /** Navegar a Bitácora ("Ver bitácora"). */
   onSave: () => void;
+  /** Volver a empezar el juego ("Otra ronda"). PRIMARIO. */
   onAnother: () => void;
+  /** Compartir el resultado vía Web Share API + clipboard fallback. */
   onShare: () => void;
-  // Opcional: si se pasa, aparece un X arriba a la izquierda + un
-  // tertiary button al pie para volver al inicio sin guardar/jugar/compartir.
+  /** Volver a Home — link tertiary al pie + X arriba a la izq. */
   onHome?: () => void;
 }
 
-const GameOver: React.FC<GameOverProps> = ({ score, onSave, onAnother, onShare, onHome }) => {
-  // Las 3 frases se calculan UNA vez al montar — la pantalla es estable
-  // mientras el usuario decide.
-  const [frases] = useState<string[]>(() => {
-    const perfil = getPerfilCompleto();
-    const dom = getTipoDominante();
-    const tipo = dom ? TIPOS_CREATIVOS[dom as TipoChispa] : null;
-    const out: string[] = [];
-
-    // Frase 1: lectura general de cierre (getFraseAde 'fin').
-    const fin = getFraseAde('fin');
-    if (fin) out.push(fin);
-
-    // Frase 2: descripción del tipo creativo dominante.
-    if (tipo) out.push(tipo.descripcion);
-
-    // Frase 3: contextual — depende de qué situación detecta.
-    if (perfil.ideasGuardadas === 0 && score > 0) {
-      out.push('Capturaste, no soltaste.');
-    } else if (perfil.racha >= 3) {
-      out.push(`Día ${perfil.racha}. Algo te llama de vuelta.`);
-    } else if (perfil.sesiones === 1) {
-      out.push('Primera sesión. Veamos qué sigue.');
-    } else if (perfil.ideasGuardadas > 0 && perfil.ideasGuardadas <= 3) {
-      out.push('Pocas ideas. Cada una pesa.');
-    } else {
-      out.push('Algo quiere salir.');
-    }
-
-    // Asegurar siempre 3 (fallback canon biblia).
-    while (out.length < 3) out.push('Ahí estaba.');
-    return out.slice(0, 3);
-  });
+const GameOver: React.FC<GameOverProps> = ({
+  metricas,
+  onSave,
+  onAnother,
+  onShare,
+  onHome,
+}) => {
+  // Las 3 observaciones se calculan UNA vez al montar — la pantalla es
+  // estable mientras el usuario decide qué hacer. Si metricas no llegó
+  // (caso defensivo), partimos de un objeto vacío y dejamos que
+  // generarLectura emita sus frases para sesión vacía.
+  const [observaciones] = useState<Observacion[]>(() =>
+    generarLectura(
+      metricas ?? {
+        capturasPorTipo: {},
+        velocidades: [],
+        saltadasFusion: 0,
+        guardadas: 0,
+        inicio: Date.now(),
+      },
+    ),
+  );
 
   return (
     <motion.div
@@ -78,9 +77,8 @@ const GameOver: React.FC<GameOverProps> = ({ score, onSave, onAnother, onShare, 
           'radial-gradient(ellipse at 50% 30%, #1a1a2e 0%, #111111 70%, #0a0a0a 100%)',
       }}
     >
-      {/* Botón cerrar/Home — esquina sup. izquierda. Permite salir
-          al inicio sin guardar/jugar/compartir. Solo se muestra si
-          el caller pasó onHome. */}
+      {/* X close — esquina sup. izquierda. Sale al inicio sin
+          interactuar con la lectura. */}
       {onHome && (
         <button
           onClick={onHome}
@@ -96,7 +94,7 @@ const GameOver: React.FC<GameOverProps> = ({ score, onSave, onAnother, onShare, 
         </button>
       )}
 
-      {/* Sparkles decoración ambiental */}
+      {/* Sparkles ambient — atmósfera, no decoración. */}
       {[
         { top: '12%', left: '10%', delay: 0, size: 4 },
         { top: '22%', right: '15%', delay: 0.6, size: 3 },
@@ -123,9 +121,9 @@ const GameOver: React.FC<GameOverProps> = ({ score, onSave, onAnother, onShare, 
         />
       ))}
 
-      {/* Contenido central */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 gap-8 relative z-10">
-        {/* Título */}
+      {/* Contenido central — protagoniza la Lectura. SIN score grande. */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 gap-10 relative z-10">
+        {/* Título "Ade detectó algo" */}
         <motion.div
           initial={{ y: -10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -148,53 +146,24 @@ const GameOver: React.FC<GameOverProps> = ({ score, onSave, onAnother, onShare, 
           />
         </motion.div>
 
-        {/* 3 frases — primera en gold, otras blancas */}
-        <div className="flex flex-col items-center gap-5 max-w-[280px] w-full">
-          {frases.map((f, i) => (
-            <motion.p
-              key={i}
-              initial={{ y: 16, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{
-                delay: 0.5 + i * 0.35,
-                type: 'spring',
-                damping: 15,
-                stiffness: 120,
-              }}
-              className="text-xl font-bold text-center leading-snug italic"
-              style={{ color: i === 0 ? '#FFD600' : '#FFFFFF' }}
-            >
-              {f}
-            </motion.p>
-          ))}
-        </div>
-
-        {/* Score visible pero secundario */}
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 1.6, duration: 0.4 }}
-          className="text-center mt-2"
-        >
-          <p className="text-[10px] font-black tracking-[0.3em] uppercase text-white/45">
-            Chispas
-          </p>
-          <p className="text-4xl font-black mt-1" style={{ color: '#FFD600' }}>
-            {score}
-          </p>
-        </motion.div>
+        {/* La lectura. 3 observaciones estructuradas, una por dimensión. */}
+        <Lectura observaciones={observaciones} />
       </div>
 
-      {/* Botones — JUGAR de nuevo es el primario; otros secundarios */}
+      {/* CTAs — Otra ronda PRIMARIO; Ver bitácora + Compartir SECUNDARIOS;
+          Volver al inicio TERTIARY. La lectura ya entró antes (último
+          stagger ~1.45s), los botones entran al final (delay 1.9s). */}
       <motion.div
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 1.9, duration: 0.4 }}
         className="flex flex-col gap-3 px-6 pb-10 relative z-10"
       >
-        {/* Guardar idea — botón primario dorado */}
+        {/* Otra ronda — PRIMARIO. Es la decisión más alineada con la
+            filosofía: si Ade leyó algo de tu comportamiento, la mejor
+            respuesta es jugar otra y dejar que el espejo se afine. */}
         <button
-          onClick={onSave}
+          onClick={onAnother}
           className="w-full py-4 rounded-full font-black uppercase tracking-wider text-base flex items-center justify-center gap-2 transition-all active:scale-[0.97] hover:scale-[1.02]"
           style={{
             background:
@@ -209,14 +178,16 @@ const GameOver: React.FC<GameOverProps> = ({ score, onSave, onAnother, onShare, 
             ].join(', '),
           }}
         >
-          <Bookmark className="w-5 h-5" style={{ fill: '#0A0A0A' }} />
-          <span>Guardar idea</span>
+          <RotateCcw className="w-5 h-5" />
+          <span>Otra ronda</span>
         </button>
 
-        {/* Secondary actions */}
+        {/* Ver bitácora + Compartir — SECUNDARIOS lado a lado.
+            "Ver bitácora" reemplaza al engañoso "Guardar idea": la idea
+            ya se guardó en FusionRonda, este botón solo navega. */}
         <div className="flex gap-3">
           <button
-            onClick={onAnother}
+            onClick={onSave}
             className="flex-1 py-3 rounded-2xl font-black tracking-widest text-[11px] uppercase flex items-center justify-center gap-1.5 transition-all active:scale-95 hover:bg-white/15"
             style={{
               background: 'rgba(255, 255, 255, 0.06)',
@@ -224,8 +195,8 @@ const GameOver: React.FC<GameOverProps> = ({ score, onSave, onAnother, onShare, 
               border: '1px solid rgba(255, 255, 255, 0.12)',
             }}
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Otra ronda</span>
+            <Book className="w-3.5 h-3.5" />
+            <span>Ver bitácora</span>
           </button>
           <button
             onClick={onShare}
