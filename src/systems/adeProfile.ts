@@ -16,6 +16,11 @@
 // puras + persistencia. La conexión la hará Game.tsx / Journal.tsx
 // en una mejora futura.
 
+// Fase 3.2: getFraseAde('inicio') consulta opcionalmente streaks para
+// usar el pool de frases secretas si el unlock está logrado. Import
+// circular evitado: streaks.ts no importa de adeProfile.ts.
+import { isUnlocked, FRASES_SECRETAS_INICIO } from './streaks';
+
 const STORAGE_KEY = 'ade-profile';
 
 // ───────────────────────────────────────────────────────────────────
@@ -260,6 +265,13 @@ export function getFraseAde(contexto: Contexto): string {
   // disparador es real, solo la forma cambió a estilo Ade.
   switch (contexto) {
     case 'inicio': {
+      // Fase 3.2: si el usuario desbloqueó la 'frase_secreta' (D14+),
+      // hay 1/3 de probabilidad de devolver una del pool especial.
+      // No reemplaza los disparadores normales — solo los enriquece.
+      if (isUnlocked('frase_secreta') && Math.random() < 0.33) {
+        const fs = FRASES_SECRETAS_INICIO;
+        return fs[Math.floor(Math.random() * fs.length)];
+      }
       if (p.racha >= 3)
         return `${p.racha} días. Volviste.`;
       if (p.sesiones > 1 && p.ideasGuardadas === 0)

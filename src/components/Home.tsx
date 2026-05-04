@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Play, Sparkles, Crown, Book, Settings } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Play, Sparkles, Crown, Book, Settings, Flame } from 'lucide-react';
 import adeIdle from '../assets/ade/characters/ade-idle.png';
-import { getFraseAde } from '../systems/adeProfile';
+import { getFraseAde, getPerfilCompleto } from '../systems/adeProfile';
 import { MODOS, MODOS_LIST, type ModoJuegoId } from '../systems/modos';
+import {
+  checkUnlocksNuevos,
+  getProximoUnlock,
+  marcarCelebrado,
+  getUnlocksCelebrados,
+  type UnlockDef,
+} from '../systems/streaks';
 
 interface HomeProps {
   onStart: () => void;
@@ -36,6 +43,31 @@ const Home: React.FC<HomeProps> = ({
   // sola vez al montar. Si en futuras visitas el perfil cambió, la
   // próxima vez que se monte Home se recalcula.
   const [fraseInicio] = useState<string>(() => getFraseAde('inicio'));
+
+  // Fase 3.2 — racha + unlocks. Se calcula al montar y NO se actualiza
+  // dinámicamente: el usuario sale al juego y vuelve a Home (re-mount).
+  const [racha] = useState<number>(() => getPerfilCompleto().racha || 0);
+  const [proximoUnlock] = useState<UnlockDef | null>(() =>
+    getProximoUnlock(getPerfilCompleto().racha || 0)
+  );
+
+  // Detectar unlocks nuevos: cualquier UNLOCK con diaRequerido <= racha
+  // que aún no estaba en logrados se agrega y se devuelve. Si hay alguno
+  // sin celebrar todavía, mostramos un overlay festivo (una sola vez).
+  const [unlockACelebrar, setUnlockACelebrar] = useState<UnlockDef | null>(null);
+  useEffect(() => {
+    const nuevos = checkUnlocksNuevos(racha);
+    const yaCelebrados = getUnlocksCelebrados();
+    // Tomamos el primero pendiente de celebración. Si hay varios, en el
+    // próximo mount se mostrará el siguiente — evita apilar overlays.
+    const pendiente = nuevos.find(u => !yaCelebrados.includes(u.id));
+    if (pendiente) setUnlockACelebrar(pendiente);
+  }, [racha]);
+
+  const cerrarCelebracion = () => {
+    if (unlockACelebrar) marcarCelebrado(unlockACelebrar.id);
+    setUnlockACelebrar(null);
+  };
 
   return (
     <div
@@ -303,6 +335,51 @@ const Home: React.FC<HomeProps> = ({
         transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
         className="relative z-10 w-full max-w-xs flex flex-col items-center gap-3"
       >
+        {/* ── Streak banner — Fase 3.2.
+            Solo se muestra si la racha >= 2 (un día = no es racha).
+            Pill compacto con icono Flame, número de días y línea biblia.
+            Si hay próximo unlock, chip pequeño debajo. */}
+        {racha >= 2 && (
+          <div className="w-full flex flex-col items-center gap-1.5 mb-1">
+            <motion.div
+              initial={{ y: -6, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4, type: 'spring', damping: 16 }}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full"
+              style={{
+                background: 'rgba(255, 214, 0, 0.14)',
+                border: '1px solid rgba(245, 196, 0, 0.4)',
+                boxShadow: '0 0 18px rgba(255, 214, 0, 0.18)',
+              }}
+            >
+              <Flame
+                className="w-3.5 h-3.5"
+                style={{ color: '#FF7043', fill: '#FFD600' }}
+              />
+              <span
+                className="text-[11px] font-black uppercase tracking-widest"
+                style={{ color: '#1A2332' }}
+              >
+                Día {racha}
+              </span>
+              <span
+                className="text-[10px] italic"
+                style={{ color: 'rgba(26, 35, 50, 0.55)' }}
+              >
+                · Volvés.
+              </span>
+            </motion.div>
+            {proximoUnlock && (
+              <p
+                className="text-[9px] font-black uppercase tracking-[0.18em]"
+                style={{ color: 'rgba(26, 35, 50, 0.4)' }}
+              >
+                D{proximoUnlock.diaRequerido} · {proximoUnlock.nombre}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* ── Modo selector — Fase 3.1.
             Pill row de 5 modos. El activo se rellena en dorado, los demás
             quedan con borde sutil. Tagline del modo activo abajo, biblia tone.
@@ -424,6 +501,77 @@ const Home: React.FC<HomeProps> = ({
           </motion.button>
         </div>
       </motion.div>
+
+      {/* ── Overlay de celebración de unlock — Fase 3.2.
+          Aparece UNA sola vez por unlock. Tono biblia: no felicita,
+          observa. Cierre con tap fuera o botón "Seguimos". */}
+      <AnimatePresence>
+        {unlockACelebrar && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[300] flex items-center justify-center px-6"
+            style={{ background: 'rgba(10, 10, 31, 0.78)', backdropFilter: 'blur(8px)' }}
+            onClick={cerrarCelebracion}
+          >
+            <motion.div
+              initial={{ scale: 0.85, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 16, stiffness: 180 }}
+              onClick={e => e.stopPropagation()}
+              className="relative max-w-[300px] w-full rounded-3xl px-7 py-8 flex flex-col items-center gap-4"
+              style={{
+                background: 'linear-gradient(180deg, #FBF1D8 0%, #F5ECD7 100%)',
+                border: '2px solid rgba(245, 196, 0, 0.5)',
+                boxShadow:
+                  '0 0 60px rgba(255, 214, 0, 0.4), 0 24px 48px rgba(0, 0, 0, 0.35)',
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-ade-gold fill-ade-gold" />
+                <span className="text-[10px] font-black tracking-[0.4em] uppercase text-ade-dark/55">
+                  Desbloqueaste
+                </span>
+                <Sparkles className="w-4 h-4 text-ade-gold fill-ade-gold" />
+              </div>
+              <p
+                className="text-5xl font-black tracking-tight"
+                style={{ color: '#1A2332' }}
+              >
+                Día {unlockACelebrar.diaRequerido}
+              </p>
+              <p
+                className="text-xl font-black uppercase tracking-wide text-center"
+                style={{ color: '#1A2332' }}
+              >
+                {unlockACelebrar.nombre}
+              </p>
+              <p
+                className="text-sm italic text-center leading-snug"
+                style={{ color: 'rgba(26, 35, 50, 0.7)' }}
+              >
+                {unlockACelebrar.descripcion}
+              </p>
+              <button
+                onClick={cerrarCelebracion}
+                className="mt-2 w-full py-3 rounded-full font-black uppercase tracking-wider text-[12px] transition-all active:scale-95"
+                style={{
+                  background:
+                    'linear-gradient(180deg, #FFE042 0%, #FFD600 50%, #F5C600 100%)',
+                  color: '#1A1A1A',
+                  boxShadow:
+                    '0 6px 0 rgba(150, 110, 0, 0.18), 0 12px 24px rgba(255, 214, 0, 0.4)',
+                }}
+              >
+                Seguimos
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Toast — refinado con tipografía y borde más coherente */}
       {toast && (
