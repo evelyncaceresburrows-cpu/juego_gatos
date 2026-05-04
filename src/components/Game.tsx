@@ -484,7 +484,7 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
       {/* PROFESSIONAL HUD */}
       <header className="relative z-20 flex flex-col p-6 pt-10 gap-6 pointer-events-auto">
         <div className="flex items-center justify-between">
-          <button onClick={() => onEnd(score)} className="w-12 h-12 bg-white/5 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/10 active:scale-90 transition-transform">
+          <button onClick={() => onEnd(score, sesionMetricsRef.current)} className="w-12 h-12 bg-white/5 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/10 active:scale-90 transition-transform">
             <ChevronLeft className="w-6 h-6" />
           </button>
           
