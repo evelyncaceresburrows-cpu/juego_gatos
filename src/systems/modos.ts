@@ -158,6 +158,152 @@ export function getPalabrasParaModo(modo: ModoJuegoId): PalabraModo[] {
   return MODOS[modo].palabras;
 }
 
+// ─── Frases por modo (Fase 3.3) ──────────────────────────────────────
+//
+// Cada modo tiene un pool propio de frases por contexto. getFraseAde
+// (en adeProfile.ts) las usa como capa intermedia entre los triggers de
+// comportamiento (más fuertes) y el fallback genérico (más débil).
+// Resultado: los modos se SIENTEN distintos, no solo se ven.
+//
+// Reglas de tono (biblia sec.10):
+//   • Negocio   → afilada, métrica, sin adornos
+//   • Ansiedad  → suave, presente, sostén
+//   • Decisiones→ seca, binaria, decisiva
+//   • Creatividad → caótica, ruptura, juego
+//   • Random    → vacío (cae a default según el spark capturado)
+
+export type Contexto = 'inicio' | 'captura' | 'fin' | 'idea';
+
+export interface FrasesPorContexto {
+  inicio?: string[];
+  captura?: string[];
+  fin?: string[];
+  idea?: string[];
+}
+
+export const FRASES_POR_MODO: Record<ModoJuegoId, FrasesPorContexto> = {
+  creatividad: {
+    inicio: [
+      'Empezamos. Sin filtros.',
+      'Vení a romper algo.',
+      'Soltá la mano.',
+    ],
+    captura: [
+      'Brillo bruto.',
+      'Eso pinta.',
+      'Sigue ahí.',
+      'Otra. Sin pensar.',
+    ],
+    fin: [
+      'Cerraste con caos.',
+      'Hoy salió rara.',
+      'Algo se movió.',
+    ],
+    idea: [
+      'Ahí hay algo.',
+      'Nueva. Suelta.',
+      'No la limpies.',
+    ],
+  },
+  negocio: {
+    inicio: [
+      'Otra vez. Mostrame el patrón.',
+      'Veamos qué traction junta.',
+      'Entrá. Mediremos.',
+      'Sin hipótesis no hay data.',
+    ],
+    captura: [
+      'Métrica capturada.',
+      'Eso sí escala.',
+      'Punto de fricción.',
+      'Hay churn ahí.',
+      'Insight bruto.',
+    ],
+    fin: [
+      'Sesión cerrada. Insight pendiente.',
+      'Pivot detectado.',
+      'Falta validación.',
+      'Mediste. Bien.',
+    ],
+    idea: [
+      'Idea con tracción.',
+      'Probala. Medila.',
+      'Eso vale algo.',
+      'Llevala a alguien.',
+    ],
+  },
+  ansiedad: {
+    inicio: [
+      'Respirá. Estoy acá.',
+      'Sin apuro hoy.',
+      'Volvés. Bien.',
+      'Ya estás.',
+    ],
+    captura: [
+      'Bien. Una más.',
+      'Lo viste.',
+      'Tranquilo.',
+      'Ahí está.',
+      'Sin presión.',
+    ],
+    fin: [
+      'Cerramos suave.',
+      'Bastó por hoy.',
+      'Volvé cuando quieras.',
+      'Lo hiciste.',
+    ],
+    idea: [
+      'Soltala.',
+      'Ya está afuera.',
+      'Eso pesaba.',
+      'Respirá. Anotaste.',
+    ],
+  },
+  decisiones: {
+    inicio: [
+      'Decidamos.',
+      'Una cosa o la otra.',
+      'Sin más vueltas.',
+      'Treinta segundos. Decidí.',
+    ],
+    captura: [
+      'Apuntá esa.',
+      'Costo o riesgo.',
+      'La intuición habló.',
+      'Dato fresco.',
+      'Otra opción menos.',
+    ],
+    fin: [
+      'Tenés con qué decidir.',
+      'Si no decidís, decide otro.',
+      'Salió un mapa.',
+      'Hora de elegir.',
+    ],
+    idea: [
+      'Esa es la decisión.',
+      'No la pierdas.',
+      'Acto.',
+      'Decidiste algo.',
+    ],
+  },
+  random: {
+    // Random no tiene voz propia — hereda la del spark capturado.
+    // Vacío intencional: getFraseAde cae en el default cuando este
+    // pool no tiene frases para el contexto.
+  },
+};
+
+/**
+ * Devuelve una frase aleatoria del pool del modo para un contexto, o
+ * cadena vacía si el pool está vacío. El llamador decide si usarla
+ * (probabilidad) o caer en su fallback propio.
+ */
+export function getFraseModo(modo: ModoJuegoId, contexto: Contexto): string {
+  const pool = FRASES_POR_MODO[modo]?.[contexto];
+  if (!pool || pool.length === 0) return '';
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 // ─── Persistencia ─────────────────────────────────────────────────────
 
 const STORAGE_KEY = 'ade_modo_actual';

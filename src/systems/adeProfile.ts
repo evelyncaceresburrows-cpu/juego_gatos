@@ -21,6 +21,12 @@
 // circular evitado: streaks.ts no importa de adeProfile.ts.
 import { isUnlocked, FRASES_SECRETAS_INICIO } from './streaks';
 
+// Fase 3.3: getFraseAde lee el modo actual y, según contexto y
+// probabilidad, devuelve una frase del pool del modo en lugar del
+// fallback genérico. modos.ts solo importa TYPES de adeProfile, así
+// que el ciclo es sólo a nivel de tipos (cero costo en runtime).
+import { getFraseModo, getModoActual } from './modos';
+
 const STORAGE_KEY = 'ade-profile';
 
 // ───────────────────────────────────────────────────────────────────
@@ -259,6 +265,9 @@ export function getFraseAde(contexto: Contexto): string {
     ultimosTres.length === 3 && ultimosTres.every((t) => t === ultimosTres[0])
       ? ultimosTres[0]
       : '';
+  // Fase 3.3: leemos el modo actual para teñir las frases con el tono
+  // del modo cuando ningún trigger de comportamiento más fuerte aplique.
+  const modoActual = getModoActual();
 
   // Tono canónico (biblia visual sec. 10): frases cortas, memorables,
   // enigmáticas. Cada una sigue siendo data-driven (alma sec. 3) — el
@@ -290,6 +299,11 @@ export function getFraseAde(contexto: Contexto): string {
         return 'Hoy vienes lento. Algo te pesa.';
       if (total > 0 && dom)
         return `Volviste a ${dom.toUpperCase()}.`;
+      // Fase 3.3 — antes del fallback genérico, intentamos una frase
+      // del modo. Esto significa que un usuario nuevo en Negocio ve
+      // "Otra vez. Mostrame el patrón." en vez de "Primera vez. Veamos."
+      const fmInicio = getFraseModo(modoActual, 'inicio');
+      if (fmInicio) return fmInicio;
       return 'Primera vez. Veamos.';
     }
 
@@ -310,6 +324,11 @@ export function getFraseAde(contexto: Contexto): string {
         return 'Primera chispa.';
       if (total === 10)
         return 'Diez. Empieza el patrón.';
+      // Fase 3.3 — modo-flavored con prob 0.55. Si no, cae al fallback
+      // canónico nombreModo(...). Sin probabilidad, "Métrica capturada."
+      // se repetiría en cada captura del modo Negocio.
+      const fmCap = getFraseModo(modoActual, 'captura');
+      if (fmCap && Math.random() < 0.55) return fmCap;
       if (ultimoTipo)
         return `${nombreModo(ultimoTipo)}. Bien visto.`;
       return '';
@@ -327,10 +346,18 @@ export function getFraseAde(contexto: Contexto): string {
         return `Día ${p.racha}. Sigues.`;
       if (dom)
         return `${dom.toUpperCase()} dominó. Mira por qué.`;
+      // Fase 3.3 — modo antes del fallback genérico.
+      const fmFin = getFraseModo(modoActual, 'fin');
+      if (fmFin) return fmFin;
       return 'Sesión cerrada. Volveremos a leerte.';
     }
 
     case 'idea': {
+      // Fase 3.3 — override modo-flavored con prob 0.30. El switch por
+      // ultimoTipo cubre 8 casos canónicos casi siempre, así que sin
+      // este override la frase del modo nunca aparecería en 'idea'.
+      const fmIdea = getFraseModo(modoActual, 'idea');
+      if (fmIdea && Math.random() < 0.30) return fmIdea;
       // ultimoTipo aquí es la chispa que disparó el Eureka, porque el
       // modal se abre justo después de registrar esa captura y se cierra
       // antes de la siguiente.
