@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Book, LayoutGrid, Map as MapIcon, User, Sparkles, ChevronRight, Download, Printer } from 'lucide-react';
-import adeOffended from '../assets/ade/characters/ade-offended.png';
+import { ASSETS } from '../lib/assets';
 import { getIdeas, downloadFile } from '../lib/storage';
 import type { Idea, RadarStats } from '../lib/storage';
 import {
@@ -301,10 +301,21 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
         <h2 className="text-3xl font-black tracking-tighter text-ade-dark">
           Bitácora & <br /> Creative Radar
         </h2>
-        <div className="w-12 h-12 bg-ade-gold rounded-full border-4 border-white shadow-md overflow-hidden">
-          <img src={adeOffended} alt="Ade" className="w-full h-full object-cover" />
-        </div>
       </header>
+
+      {/* Pose cognitiva de Ade en Bitácora.
+          - Si hay ideas: adeArchive como elemento visual único arriba
+            del listado (interpretación: Ade leyendo el cuaderno).
+          - Si no hay: adeOffended como anclaje del vacío.
+          Ambos tamaño w-28 md:w-36, opacity 0.9 (per spec).
+          El cat NO es botón ni se repite por idea. */}
+      <div className="flex justify-center -mt-2">
+        <img
+          src={ideas.length > 0 ? ASSETS.adeArchive : ASSETS.adeOffended}
+          alt={ideas.length > 0 ? 'Ade archive' : 'Ade sin actividad'}
+          className="w-28 md:w-36 opacity-90"
+        />
+      </div>
 
       {/* Banner de "lectura final" — solo cuando llega de partida.
           Frase computada de getFraseAde('fin') al montar. */}

@@ -23,6 +23,7 @@ import {
   generarLectura,
   type MetricasSesion,
 } from '../systems/lectura';
+import { ASSETS } from '../lib/assets';
 
 interface GameOverProps {
   /** Score interno de la sesión (no se renderiza, solo se pasa a share). */
@@ -145,6 +146,18 @@ const GameOver: React.FC<GameOverProps> = ({
             style={{ color: '#FFD600', fill: '#FFD600' }}
           />
         </motion.div>
+
+        {/* Pose cognitiva — adeInterpret. Es el momento de la lectura
+            final: Ade leyendo el comportamiento del jugador. Tamaño
+            modal (w-28 md:w-36 per spec). No es botón. */}
+        <motion.img
+          src={ASSETS.adeInterpret}
+          alt="Ade interpretando"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.95 }}
+          transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
+          className="w-28 md:w-36 max-w-full pointer-events-none"
+        />
 
         {/* La lectura. 3 observaciones estructuradas, una por dimensión. */}
         <Lectura observaciones={observaciones} />

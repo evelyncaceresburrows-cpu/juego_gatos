@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Timer, Zap, Pause, ChevronLeft } from 'lucide-react';
-import adeEureka from '../assets/ade/characters/ade-eureka.png';
-import adeHunt from '../assets/ade/characters/ade-hunt.png';
-import adeIdle from '../assets/ade/characters/ade-idle.png';
-import adeOffended from '../assets/ade/characters/ade-offended.png';
+// Sistema cognitivo de Ade — paths string desde public/.
+// Cada pose representa una función mental distinta. Ver src/lib/assets.ts.
+import { ASSETS } from '../lib/assets';
 import { saveIdeaToStorage } from '../lib/storage';
 import {
   registrarCaptura,
@@ -136,7 +135,12 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
   const [timeLeft, setTimeLeft] = useState(30);
   const [combo, setCombo] = useState(1);
   const [sparks, setSparks] = useState<Spark[]>([]);
-  const [adeState, setAdeState] = useState<'idle' | 'hunt' | 'eureka' | 'offended'>('idle');
+  // Estado cognitivo de Ade — base del gameplay es 'scan' (anticipación,
+  // detección). 'idle' NO se usa dentro del juego activo (ese es el
+  // estado de Home). 'fuse' reemplaza a 'eureka' (acto de combinar dos
+  // ideas). 'interpret' es defensivo — la lectura final vive en GameOver,
+  // no en este componente, así que no se dispara desde acá hoy.
+  const [adeState, setAdeState] = useState<'scan' | 'hunt' | 'fuse' | 'interpret' | 'offended'>('scan');
   const [adePhrase, setAdePhrase] = useState('');
   
   // Eureka Modal eliminado — reemplazado por FusionRonda (Fase 2).
@@ -192,7 +196,7 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
   });
 
   const triggerAdeState = (
-    state: 'idle' | 'hunt' | 'eureka' | 'offended',
+    state: 'scan' | 'hunt' | 'fuse' | 'interpret' | 'offended',
     duration: number = 2000
   ) => {
     setAdeState(state);
@@ -203,11 +207,12 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
       adeTimeout.current = null;
     }
 
-    // Eureka es estado pegajoso (lo cierra el modal); para los demás,
-    // volvemos a 'idle' después de `duration` ms.
-    if (state !== 'eureka') {
+    // 'fuse' es estado pegajoso (lo cierra el modal de FusionRonda).
+    // Para los demás, volvemos a 'scan' (la base del gameplay activo)
+    // después de `duration` ms.
+    if (state !== 'fuse') {
       adeTimeout.current = setTimeout(() => {
-        setAdeState('idle');
+        setAdeState('scan');
         adeTimeout.current = null;
       }, duration);
     }
@@ -330,7 +335,10 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
     // canónico, alma sec.3 + biblia sec.7 — alegría sin caricatura).
     if (newCombo === 3) {
       setFlowActive(true);
-      triggerAdeState('eureka', 1800);
+      // FLOW MODE — usamos 'fuse' aquí (el "estado activo de creación").
+      // Aunque la fusión real abre con FusionRonda, el FLOW es el
+      // momento en que las ideas empiezan a combinarse mentalmente.
+      triggerAdeState('fuse', 1800);
       setTimeout(() => setFlowActive(false), 1800);
     }
 
@@ -344,7 +352,9 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
     setFusionPath(newPath);
 
     if (newPath >= 5) {
-      triggerAdeState('eureka', 1100);
+      // Anillo cerrado — Ade pasa a 'fuse', el modal de FusionRonda
+      // se monta 1.1s después con la pose ya establecida.
+      triggerAdeState('fuse', 1100);
       setTimeout(() => {
         setShowFusion(true);
       }, 1100);
@@ -364,11 +374,14 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
   };
 
   const getAdeImage = () => {
+    // Map del estado cognitivo al asset correspondiente. Default es
+    // 'scan' (la base del gameplay activo), no 'idle' (que es de Home).
     switch (adeState) {
-      case 'hunt': return adeHunt;
-      case 'eureka': return adeEureka;
-      case 'offended': return adeOffended;
-      default: return adeIdle;
+      case 'hunt':      return ASSETS.adeHunt;
+      case 'fuse':      return ASSETS.adeFuse;
+      case 'interpret': return ASSETS.adeInterpret;
+      case 'offended':  return ASSETS.adeOffended;
+      default:          return ASSETS.adeScan;
     }
   };
 
@@ -401,7 +414,7 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
     setShowFusion(false);
     setRecentChispas([]);  // reinicia buffer para la próxima ronda
     setFusionPath(0);      // anillo vuelve a vacío para el próximo ciclo
-    triggerAdeState('idle');
+    triggerAdeState('scan');
   };
 
   // Handler de guardar idea desde FusionRonda. Recibe el insight de la
@@ -695,16 +708,17 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
           ))}
         </AnimatePresence>
 
-        {/* Character — Animaciones expresivas por estado.
+        {/* Character — Animaciones expresivas por estado cognitivo.
             Cada estado tiene un keyframe + transición pensada para
             transmitir el "alma" del momento (alma sec.1: Ade es entidad viva).
-              idle     → respiración + flotación lenta (3.6s loop)
-              hunt     → salto rápido tipo pounce, mantiene scale arriba
-              eureka   → 3 saltitos celebración + scale variable
-              offended → slump leve hacia abajo + tilt -3° */}
+              scan      → respiración + flotación lenta (3.6s loop) — la base
+              hunt      → salto rápido tipo pounce, mantiene scale arriba
+              fuse      → 3 saltitos celebración + scale variable (era eureka)
+              interpret → respiración suspendida, scale 1, no flotación
+              offended  → slump leve hacia abajo + tilt -3° */}
         <motion.div
           animate={
-            adeState === 'idle' ? {
+            adeState === 'scan' ? {
               y: [0, -12, 0],
               scale: [1, 1.02, 1],
               rotate: 0,
@@ -712,9 +726,13 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
               y: [-40, -32, -38, -32],
               scale: [1.18, 1.12, 1.15, 1.12],
               rotate: 0,
-            } : adeState === 'eureka' ? {
+            } : adeState === 'fuse' ? {
               y: [0, -22, -6, -16, -8],
               scale: [1, 1.15, 1.05, 1.12, 1.08],
+              rotate: 0,
+            } : adeState === 'interpret' ? {
+              y: 0,
+              scale: 1,
               rotate: 0,
             } : adeState === 'offended' ? {
               y: 6,
@@ -723,22 +741,25 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
             } : { y: 0, scale: 1, rotate: 0 }
           }
           transition={
-            adeState === 'idle' ? {
+            adeState === 'scan' ? {
               duration: 3.6,
               repeat: Infinity,
               ease: 'easeInOut',
             } : adeState === 'hunt' ? {
               duration: 0.55,
               ease: 'easeOut',
-            } : adeState === 'eureka' ? {
+            } : adeState === 'fuse' ? {
               duration: 0.85,
               ease: 'easeInOut',
+            } : adeState === 'interpret' ? {
+              duration: 0.5,
+              ease: 'easeOut',
             } : adeState === 'offended' ? {
               duration: 0.45,
               ease: 'easeOut',
             } : { duration: 0.3 }
           }
-          className="absolute bottom-4 left-4 md:left-12 w-56 md:w-72 aspect-[1.5/1] pointer-events-none z-30"
+          className="absolute bottom-4 left-4 md:left-12 w-44 md:w-64 max-w-full aspect-[1.5/1] pointer-events-none z-30"
         >
           {/* Indicador de acumulación — anillo dorado de 5 arcos que
               rodea al cat. Cada captura enciende un arco; los 5 cerrados
@@ -771,11 +792,11 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
               filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.5))',
               objectPosition: 'bottom',
             }}
-            animate={adeState === 'idle'
+            animate={adeState === 'scan'
               ? { opacity: [1, 1, 0.82, 1, 1, 1, 1, 0.82, 1, 1] }
               : { opacity: 1 }
             }
-            transition={adeState === 'idle'
+            transition={adeState === 'scan'
               ? {
                   // duración del ciclo de parpadeo viene del ánimo de
                   // Ade. filoso/ansioso → más rápido, sereno/atento →

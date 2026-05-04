@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Sparkles, Crown, Book, Settings, Flame, X } from 'lucide-react';
-import adeIdle from '../assets/ade/characters/ade-idle.png';
+import { ASSETS } from '../lib/assets';
 import { getFraseAde, getPerfilCompleto } from '../systems/adeProfile';
 import { MODOS, MODOS_LIST, type ModoJuegoId } from '../systems/modos';
 import {
@@ -43,6 +43,20 @@ const Home: React.FC<HomeProps> = ({
   // sola vez al montar. Si en futuras visitas el perfil cambió, la
   // próxima vez que se monte Home se recalcula.
   const [fraseInicio] = useState<string>(() => getFraseAde('inicio'));
+
+  // Pose de Ade en Home. Default 'idle' (reposo). Cuando el usuario tapea
+  // al cat, pasa a 'curious' por ~1.5s y vuelve. Es el momento de
+  // "despertar a Ade" — Ade nota que lo miran y reacciona.
+  const [adeHomePose, setAdeHomePose] = useState<string>(ASSETS.adeIdle);
+  const adeHomeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const despertarAde = () => {
+    if (adeHomeTimeout.current) clearTimeout(adeHomeTimeout.current);
+    setAdeHomePose(ASSETS.adeCurious);
+    adeHomeTimeout.current = setTimeout(() => {
+      setAdeHomePose(ASSETS.adeIdle);
+      adeHomeTimeout.current = null;
+    }, 1500);
+  };
 
   // Fase 3.2 — racha + unlocks. Se calcula al montar y NO se actualiza
   // dinámicamente: el usuario sale al juego y vuelve a Home (re-mount).
@@ -306,9 +320,10 @@ const Home: React.FC<HomeProps> = ({
               }}
             >
               <motion.img
-                src={adeIdle}
+                src={adeHomePose}
                 alt="Ade"
-                className="w-full h-auto max-h-[36vh] object-contain"
+                onClick={despertarAde}
+                className="w-44 md:w-64 max-w-full h-auto object-contain mx-auto cursor-pointer"
                 style={{
                   filter:
                     'drop-shadow(0 16px 24px rgba(0, 0, 0, 0.12)) drop-shadow(0 4px 8px rgba(245, 196, 0, 0.18))',

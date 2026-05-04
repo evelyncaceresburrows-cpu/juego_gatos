@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Bookmark } from 'lucide-react';
 import type { TipoChispa } from '../systems/adeProfile';
 import { getFusion, esTipoCanonico, type FusionContext } from '../systems/fusiones';
+import { ASSETS } from '../lib/assets';
 
 interface FusionRondaProps {
   // Las últimas 5 chispas capturadas en la ronda 1, en uppercase
@@ -127,6 +128,18 @@ const FusionRonda: React.FC<FusionRondaProps> = ({ chispas, onSave, onClose, con
           <X className="w-5 h-5" />
         </button>
       </header>
+
+      {/* Pose cognitiva — Ade en estado fuse mientras combinas dos
+          chispas. Tamaño modal (w-28 md:w-36 per spec). Se monta una
+          sola vez en la cabecera del modal, no se repite por chispa
+          ni se vuelve botón. */}
+      <div className="flex justify-center -mt-2 mb-1 pointer-events-none">
+        <img
+          src={ASSETS.adeFuse}
+          alt="Ade fusionando"
+          className="w-28 md:w-36 max-w-full opacity-95"
+        />
+      </div>
 
       {/* Cuerpo */}
       <div className="flex-1 px-6 pb-6 flex flex-col">
