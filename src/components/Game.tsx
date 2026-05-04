@@ -147,6 +147,10 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
   // En la primera captura, el delta es desde el mount del componente.
   const lastCaptureTimeRef = useRef<number>(Date.now());
 
+  // FLOW MODE — cuando combo cruza de 2 a 3, dispara overlay dorado +
+  // pose de eureka temporal de Ade (alma sec.3 + biblia sec.7 — alegría).
+  const [flowActive, setFlowActive] = useState(false);
+
   const triggerAdeState = (
     state: 'idle' | 'hunt' | 'eureka' | 'offended',
     duration: number = 2000
@@ -250,6 +254,16 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
     const newCombo = combo + 1;
     setCombo(newCombo);
     setScore(prev => prev + 10 + (newCombo * 2));
+
+    // FLOW MODE: al cruzar de 2 a 3 capturas seguidas, Ade entra en
+    // modo concentración + overlay visual. Solo dispara la primera vez
+    // en la subida; si combo sigue subiendo no re-dispara hasta que
+    // se reinicie por miss.
+    if (newCombo === 3) {
+      setFlowActive(true);
+      triggerAdeState('eureka', 1800);
+      setTimeout(() => setFlowActive(false), 1800);
+    }
 
     if (newCombo % 5 === 0) {
       setCurrentSparkType({
@@ -395,8 +409,9 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
               <div className="w-px h-8 bg-white/10 mx-2" />
 
               <div className="flex flex-col items-end">
-                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Puntaje</span>
-                {/* Puntaje en blanco bold (era ade-gold). */}
+                {/* Puntaje renombrado a CHISPAS (alma sec.5 — métricas con
+                    significado emocional, no genéricas). */}
+                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Chispas</span>
                 <span className="text-2xl font-black leading-none text-white">{score.toLocaleString()}</span>
               </div>
             </div>
@@ -555,6 +570,49 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
           </AnimatePresence>
         </motion.div>
       </main>
+
+      {/* FLOW MODE banner — pulse dorado central + Ade en pose eureka */}
+      <AnimatePresence>
+        {flowActive && (
+          <motion.div
+            key="flow-banner"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none"
+          >
+            {/* Glow background pulsante */}
+            <motion.div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'radial-gradient(circle at 50% 50%, rgba(255, 214, 0, 0.22) 0%, rgba(255, 214, 0, 0.08) 40%, transparent 70%)',
+              }}
+              animate={{ opacity: [0.6, 1, 0.6] }}
+              transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            {/* Texto FLOW */}
+            <motion.span
+              initial={{ scale: 0.7, y: 10 }}
+              animate={{ scale: [1, 1.08, 1], y: 0 }}
+              transition={{
+                scale: { duration: 1.2, repeat: Infinity, ease: 'easeInOut' },
+                y: { duration: 0.4, type: 'spring', damping: 12 },
+              }}
+              className="font-black uppercase select-none"
+              style={{
+                color: '#FFD600',
+                fontSize: '56px',
+                letterSpacing: '0.4em',
+                textShadow:
+                  '0 0 30px rgba(255, 214, 0, 0.9), 0 0 60px rgba(255, 214, 0, 0.5)',
+              }}
+            >
+              FLOW
+            </motion.span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Eureka Modal Overlay */}
       <AnimatePresence>

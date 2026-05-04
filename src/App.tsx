@@ -4,8 +4,9 @@ import Game from './components/Game';
 import Journal from './components/Journal';
 import Perfil from './components/Perfil';
 import Mapa from './components/Mapa';
+import GameOver from './components/GameOver';
 
-type Screen = 'home' | 'game' | 'journal' | 'perfil' | 'mapa';
+type Screen = 'home' | 'game' | 'journal' | 'perfil' | 'mapa' | 'gameover';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
@@ -19,8 +20,22 @@ export default function App() {
 
   const handleGameEnd = useCallback((score: number) => {
     setLastScore(score);
-    setCurrentScreen('journal');
+    // Pasamos por GameOver primero ("ADE detectó algo...") en vez de
+    // saltar directo a Bitácora. El usuario decide si guarda, juega
+    // otra o comparte.
+    setCurrentScreen('gameover');
   }, []);
+
+  // Acciones desde la pantalla GameOver.
+  const handleShare = useCallback(() => {
+    const text = `Acabo de capturar ${lastScore} chispas en ADE — el gato que caza ideas.`;
+    const url = 'https://juego-gatos.vercel.app';
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      navigator.share({ title: 'ADE', text, url }).catch(() => {});
+    } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(`${text} ${url}`);
+    }
+  }, [lastScore]);
 
   return (
     <div className="mx-auto max-w-[430px] w-full min-h-screen min-h-[100dvh] bg-ade-beige text-ade-dark overflow-hidden font-sans relative">
@@ -63,6 +78,14 @@ export default function App() {
       )}
       {currentScreen === 'mapa' && (
         <Mapa onBack={() => setCurrentScreen(mapaOrigen)} />
+      )}
+      {currentScreen === 'gameover' && (
+        <GameOver
+          score={lastScore}
+          onSave={() => setCurrentScreen('journal')}
+          onAnother={() => setCurrentScreen('game')}
+          onShare={handleShare}
+        />
       )}
     </div>
   );

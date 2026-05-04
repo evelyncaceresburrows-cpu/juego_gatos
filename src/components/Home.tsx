@@ -157,6 +157,11 @@ const Home: React.FC<HomeProps> = ({ onStart, onJournal, onPerfil }) => {
         >
           El gato que caza ideas
         </p>
+
+        {/* Tagline funcional — explica qué hacés en 5 segundos. */}
+        <p className="mt-4 text-ade-dark/65 text-sm font-medium leading-snug max-w-[280px] mx-auto">
+          Conecta palabras. Descubre ideas. Juega 30 segundos.
+        </p>
       </motion.div>
 
       {/* ── Cat sprite con halo doble + glow pulse ── */}
@@ -312,7 +317,7 @@ const Home: React.FC<HomeProps> = ({ onStart, onJournal, onPerfil }) => {
           }}
         >
           <Play className="w-5 h-5 relative z-10" style={{ fill: '#0A0A0A' }} />
-          <span className="relative z-10">JUGAR</span>
+          <span className="relative z-10">Cazar ahora</span>
 
           {/* Shine sweep al hover — luz que pasa por el botón */}
           <span
