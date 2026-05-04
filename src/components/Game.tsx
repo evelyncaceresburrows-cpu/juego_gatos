@@ -224,13 +224,12 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
     setScore(prev => prev + 10 + (newCombo * 2));
 
     // FLOW MODE: al cruzar de 2 a 3 capturas seguidas, dispara overlay
-    // dorado. NO se cambia pose de Ade — eureka.png está cropeado al
-    // torso (asset legacy sin originales full-body para hunt/eureka),
-    // y forzar pose en flow hacía que Ade se viera "cortado". Mantener
-    // idle preserva el asset full-body (biblia: "Ade jamás se mueve
-    // torpemente"). El overlay dorado hace el trabajo visual.
+    // dorado + pose eureka de Ade. Ahora seguro porque ade-eureka.png
+    // es full-body (gato sentado con pata levantada y bombilla — sprite
+    // canónico, alma sec.3 + biblia sec.7 — alegría sin caricatura).
     if (newCombo === 3) {
       setFlowActive(true);
+      triggerAdeState('eureka', 1800);
       setTimeout(() => setFlowActive(false), 1800);
     }
 
