@@ -296,7 +296,7 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
   const filteredIdeas = filter === 'recientes' ? ideas : ideas.filter(i => i.type === filter);
 
   return (
-    <div className="min-h-screen bg-ade-beige flex flex-col p-6 space-y-8 overflow-y-auto pb-24">
+    <div className="min-h-screen-safe pb-safe bg-ade-beige flex flex-col p-6 space-y-8 overflow-y-auto">
       <header className="flex items-center justify-between">
         <h2 className="text-3xl font-black tracking-tighter text-ade-dark">
           Bitácora & <br /> Creative Radar

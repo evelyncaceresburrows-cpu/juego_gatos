@@ -336,7 +336,7 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
 
   return (
     <div
-      className="relative min-h-screen text-white overflow-hidden select-none"
+      className="relative min-h-screen-safe pb-safe pt-safe text-white overflow-hidden select-none"
       style={{
         // Fondo nocturno: deep blue arriba → púrpura medio → marrón cálido
         // abajo. Stops más densos para que la transición sea perceptible y

@@ -50,7 +50,7 @@ const Perfil: React.FC<PerfilProps> = ({ onBack }) => {
 
   return (
     <div
-      className="min-h-screen flex flex-col text-white overflow-hidden"
+      className="min-h-screen-safe pb-safe pt-safe flex flex-col text-white"
       style={{ background: '#111111' }}
     >
       {/* Header */}

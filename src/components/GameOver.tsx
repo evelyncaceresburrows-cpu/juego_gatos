@@ -67,7 +67,7 @@ const GameOver: React.FC<GameOverProps> = ({ score, onSave, onAnother, onShare, 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen flex flex-col text-white relative"
+      className="min-h-screen-safe pb-safe pt-safe flex flex-col text-white relative"
       style={{
         background:
           'radial-gradient(ellipse at 50% 30%, #1a1a2e 0%, #111111 70%, #0a0a0a 100%)',

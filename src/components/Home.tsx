@@ -71,7 +71,7 @@ const Home: React.FC<HomeProps> = ({
 
   return (
     <div
-      className="relative min-h-screen flex flex-col items-center justify-between py-8 px-6 gap-4"
+      className="relative min-h-screen-safe flex flex-col items-center justify-between py-8 px-6 gap-4 pb-safe pt-safe"
       style={{
         // Fondo crema cálido + gradiente vertical sutil para profundidad.
         // Capa base sólida + spotlight diagonal muy leve.

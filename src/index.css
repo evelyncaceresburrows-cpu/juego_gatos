@@ -11,10 +11,26 @@
     box-sizing: border-box;
   }
 
-  body {
-    @apply text-ade-dark font-sans antialiased overflow-hidden select-none;
-    font-family: 'Inter', sans-serif;
+  html, body {
     margin: 0;
+    /* FIX URGENTE — viewport mobile.
+       En iOS Safari y Chrome móvil, 100vh siempre incluye la barra del
+       browser (incluso cuando está oculta), lo que recorta el bottom de
+       la app. Triple fallback: vh para browsers viejos, svh para los
+       que soportan small viewport, dvh para los que soportan dynamic.
+       El último que el browser entienda gana. */
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
+
+  body {
+    @apply text-ade-dark font-sans antialiased select-none;
+    font-family: 'Inter', sans-serif;
+    /* overflow-hidden global retirado — clipeaba el bottom de las
+       pantallas largas en mobile. Mantenemos overflow-x-hidden para
+       evitar scroll horizontal accidental. overflow-y libre. */
+    overflow-x: hidden;
     /* Layout responsive mobile-first: el column del juego (max-w 430px en
        App.tsx) se centra horizontalmente; en desktop estos #111 quedan a
        los lados como marco enmarcando el column como pantalla de teléfono. */
@@ -22,7 +38,7 @@
     display: flex;
     justify-content: center;
   }
-  
+
   h1, h2, h3 {
     font-family: 'Outfit', sans-serif;
   }
@@ -61,5 +77,34 @@
 
   .hide-scrollbar::-webkit-scrollbar {
     display: none;               /* Chrome / Safari / Opera */
+  }
+
+  /* FIX URGENTE — alturas mobile-safe.
+     Reemplazo drop-in para min-h-screen / h-screen en componentes que
+     necesitan ocupar viewport sin recorte por la barra del browser.
+     Triple fallback: vh → svh → dvh (último ganador). */
+  .min-h-screen-safe {
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
+  .h-screen-safe {
+    height: 100vh;
+    height: 100svh;
+    height: 100dvh;
+  }
+
+  /* Padding safe-area — respeta notch + home indicator de iOS y la
+     barra del browser. max(...) garantiza un piso mínimo cuando no
+     hay safe area declarada. */
+  .pb-safe {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  .pt-safe {
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+  .px-safe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 }
