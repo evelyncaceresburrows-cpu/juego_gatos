@@ -14,10 +14,31 @@
 // tono. Pero las 8 + 28 cubren TODO el universo canónico.
 
 import type { TipoChispa } from './adeProfile';
+import type { ModoJuegoId } from './modos';
 
 // Helper: produce key normalizada para que [a, b] === [b, a].
 function pairKey(a: TipoChispa, b: TipoChispa): string {
   return [a, b].sort().join('+');
+}
+
+// ─── Contexto opcional para modulación ──────────────────────────────
+//
+// La matriz canónica (FUSIONES_PREMIUM + AUTO_FUSIONES) sigue siendo
+// el ancla — es el insight "puro" del par. Pero la frase final puede
+// teñirse por el contexto de la sesión: si fuiste muy rápido, si el
+// modo de juego es Ansiedad, si llevás racha alta. Esto evita que el
+// mismo par siempre lea idéntico, sin caer en aleatoriedad.
+//
+// Modulación es lineal (un solo prefijo o sufijo, no compuesto). Orden
+// de prioridad descendente: velocidad → modo → racha.
+
+export interface FusionContext {
+  /** Velocidad promedio de captura en la sesión, en ms. */
+  velocidadPromedio: number;
+  /** Modo de juego activo cuando se hace la fusión. */
+  modo: ModoJuegoId;
+  /** Racha actual del jugador (en días). */
+  racha: number;
 }
 
 // 28 fusiones premium curadas. Tono Ade: corta, observa, no felicita.
@@ -84,15 +105,49 @@ const AUTO_FUSIONES: Record<TipoChispa, string> = {
  * mismo, devuelve el auto-fusion. Si la pareja no existe en el mapa
  * (caso legacy / tipo desconocido), cae a una plantilla genérica que
  * mantiene el tono Ade.
+ *
+ * Si se pasa `ctx`, la frase canónica se modula por velocidad/modo/racha
+ * antes de devolverse. Sin ctx, devuelve la frase pura (backward compat).
  */
-export function getFusion(a: TipoChispa, b: TipoChispa): string {
+export function getFusion(
+  a: TipoChispa,
+  b: TipoChispa,
+  ctx?: FusionContext
+): string {
+  // 1. Resolver el insight base de la matriz canónica.
+  let base: string;
   if (a === b) {
-    return AUTO_FUSIONES[a] ?? `Doble ${a.toUpperCase()}.`;
+    base = AUTO_FUSIONES[a] ?? `Doble ${a.toUpperCase()}.`;
+  } else {
+    const key = pairKey(a, b);
+    base = FUSIONES_PREMIUM[key] ?? `${a.toUpperCase()} + ${b.toUpperCase()}. Algo dice.`;
   }
-  const key = pairKey(a, b);
-  if (FUSIONES_PREMIUM[key]) return FUSIONES_PREMIUM[key];
-  // Plantilla fallback — solo se dispara si los modos no son canónicos.
-  return `${a.toUpperCase()} + ${b.toUpperCase()}. Algo dice.`;
+
+  // 2. Sin contexto → frase pura. Mantiene retrocompatibilidad con
+  // cualquier caller existente que no haya migrado a la nueva firma.
+  if (!ctx) return base;
+
+  // 3. Modulación lineal — un solo prefijo o sufijo, no compuesto.
+  // Prioridad: velocidad > modo > racha. La primera condición que
+  // matchea decide la modulación final.
+  if (ctx.velocidadPromedio > 0 && ctx.velocidadPromedio < 700) {
+    // Capturó por reflejo, no pensó. La fusión llega antes que la idea.
+    return `Demasiado rápido para entenderlo. ${base}`;
+  }
+  if (ctx.modo === 'ansiedad') {
+    // Modo Ansiedad invita a sostener lo que apareció, no a ejecutar.
+    return `${base} Respira con eso.`;
+  }
+  if (ctx.modo === 'decisiones' && a !== b) {
+    // Modo Decisiones lee toda fusión como dilema. Solo aplica cuando
+    // hay dos opciones distintas (auto-fusión no tiene "cuál").
+    return `${base} Decide cuál.`;
+  }
+  if (ctx.racha >= 14) {
+    // Tras dos semanas, Ade reconoce que el jugador ya vio este patrón.
+    return `${base} Otra vez.`;
+  }
+  return base;
 }
 
 /**

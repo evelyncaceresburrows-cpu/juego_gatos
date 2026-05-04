@@ -19,7 +19,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Bookmark } from 'lucide-react';
 import type { TipoChispa } from '../systems/adeProfile';
-import { getFusion, esTipoCanonico } from '../systems/fusiones';
+import { getFusion, esTipoCanonico, type FusionContext } from '../systems/fusiones';
 
 interface FusionRondaProps {
   // Las últimas 5 chispas capturadas en la ronda 1, en uppercase
@@ -35,6 +35,11 @@ interface FusionRondaProps {
   }) => void;
   // Callback cuando el usuario cierra sin guardar (o termina la fusión).
   onClose: () => void;
+  // Paso 5/6 — contexto opcional para modular el insight de la matriz.
+  // Sin ctx, getFusion devuelve la frase pura (backward compat). Con ctx,
+  // la frase se tiñe por velocidad/modo/racha. El padre (Game.tsx) lo
+  // construye al montar la ronda.
+  context?: FusionContext;
 }
 
 // Mismo mapping que Game.tsx — color por modo (4 paletas para 8 modos).
@@ -49,7 +54,7 @@ const MODO_COLOR: Record<string, string> = {
   error: '#B088FF',
 };
 
-const FusionRonda: React.FC<FusionRondaProps> = ({ chispas, onSave, onClose }) => {
+const FusionRonda: React.FC<FusionRondaProps> = ({ chispas, onSave, onClose, context }) => {
   // Filtramos a chispas canónicas (defensa contra legacy).
   const chispasNorm: TipoChispa[] = chispas
     .map(c => c.toLowerCase())
@@ -62,8 +67,10 @@ const FusionRonda: React.FC<FusionRondaProps> = ({ chispas, onSave, onClose }) =
   const dosSeleccionadas = seleccion.length === 2;
   const modoA = dosSeleccionadas ? chispasNorm[seleccion[0]] : null;
   const modoB = dosSeleccionadas ? chispasNorm[seleccion[1]] : null;
+  // Paso 5/6 — pasamos el contexto al getFusion. Si el padre no lo
+  // mandó, getFusion devuelve la frase pura de la matriz canónica.
   const insight =
-    dosSeleccionadas && modoA && modoB ? getFusion(modoA, modoB) : '';
+    dosSeleccionadas && modoA && modoB ? getFusion(modoA, modoB, context) : '';
 
   const toggleSeleccion = (idx: number) => {
     if (dosSeleccionadas) return; // bloquea más selecciones

@@ -10,8 +10,10 @@ import {
   registrarCaptura,
   registrarIdeaGuardada,
   getFraseAde,
+  getPerfilCompleto,
   type TipoChispa,
 } from '../systems/adeProfile';
+import type { FusionContext } from '../systems/fusiones';
 import {
   getPalabrasParaModo,
   MODOS,
@@ -368,6 +370,23 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
       case 'offended': return adeOffended;
       default: return adeIdle;
     }
+  };
+
+  // Construye el FusionContext con la velocidad promedio de la sesión,
+  // el modo activo y la racha del perfil. La función se llama solo cuando
+  // FusionRonda se va a renderizar (showFusion === true), así que no es
+  // costosa: el reduce sobre `velocidades` es trivial (< 200 entradas) y
+  // getPerfilCompleto lee localStorage una sola vez por monte.
+  const buildFusionContext = (): FusionContext => {
+    const v = sesionMetricsRef.current.velocidades;
+    const velocidadPromedio = v.length
+      ? v.reduce((s, x) => s + x, 0) / v.length
+      : 0;
+    return {
+      velocidadPromedio,
+      modo,
+      racha: getPerfilCompleto().racha || 0,
+    };
   };
 
   // Handler de cierre de FusionRonda. El parámetro `guardada` distingue
@@ -842,6 +861,7 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
             chispas={recentChispas}
             onSave={handleFusionSave}
             onClose={closeFusion}
+            context={buildFusionContext()}
           />
         )}
       </AnimatePresence>
