@@ -270,15 +270,61 @@ const Home: React.FC<HomeProps> = ({
             }}
           />
 
-          <img
-            src={adeIdle}
-            alt="Ade"
-            className="w-full h-auto max-h-[36vh] object-contain relative z-10"
-            style={{
-              filter:
-                'drop-shadow(0 16px 24px rgba(0, 0, 0, 0.12)) drop-shadow(0 4px 8px rgba(245, 196, 0, 0.18))',
+          {/* ── Micro-animaciones de Ade — Fase 3.4.
+              Tres capas anidadas, cada una con su propio período (no
+              múltiplos entre sí) para que la combinación se sienta
+              orgánica y no robótica:
+                • Layer 1 — yawn: scaleY pulse cada ~13s (estiramiento
+                  hacia arriba, transformOrigin abajo).
+                • Layer 2 — look around: rotate sutil cada ~10s (cabeza
+                  mirando lateral).
+                • Layer 3 — blink: opacity dip de ~120ms cada ~6.5s
+                  (parpadeo fake — el sprite es estático, así que
+                  bajamos opacidad del cat entero brevemente).
+              Combinado con el `y` del wrapper externo (5s float),
+              ningún ciclo coincide con otro = movimiento siempre fresco.
+              Biblia: "Ade jamás se mueve torpemente". */}
+          <motion.div
+            className="relative z-10"
+            style={{ transformOrigin: '50% 100%' }}
+            animate={{ scaleY: [1, 1, 1.045, 1, 1] }}
+            transition={{
+              duration: 13,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              times: [0, 0.5, 0.6, 0.7, 1],
             }}
-          />
+          >
+            <motion.div
+              style={{ transformOrigin: '50% 100%' }}
+              animate={{ rotate: [0, 0, -1.5, 0, 1.5, 0, 0] }}
+              transition={{
+                duration: 10,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                times: [0, 0.15, 0.27, 0.4, 0.55, 0.7, 1],
+              }}
+            >
+              <motion.img
+                src={adeIdle}
+                alt="Ade"
+                className="w-full h-auto max-h-[36vh] object-contain"
+                style={{
+                  filter:
+                    'drop-shadow(0 16px 24px rgba(0, 0, 0, 0.12)) drop-shadow(0 4px 8px rgba(245, 196, 0, 0.18))',
+                }}
+                animate={{
+                  opacity: [1, 1, 0.78, 1, 1, 1, 1, 0.78, 1, 1],
+                }}
+                transition={{
+                  duration: 6.5,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  times: [0, 0.32, 0.34, 0.36, 0.5, 0.7, 0.86, 0.88, 0.9, 1],
+                }}
+              />
+            </motion.div>
+          </motion.div>
 
           {/* ── Globo de texto rediseñado — más elegante ── */}
           {fraseInicio && (

@@ -548,7 +548,11 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
           }
           className="absolute bottom-4 left-4 md:left-12 w-56 md:w-72 aspect-[1.5/1] pointer-events-none z-30"
         >
-          <img
+          {/* Fase 3.4 — parpadeo sutil solo en idle. Las otras poses
+              son transiciones cortas (0.5-0.85s); blink se cortaría.
+              Wrapper ya hace la "respiración" (y + scale en idle), así
+              que la img solo añade un opacity dip de ~120ms cada 5.3s. */}
+          <motion.img
             src={getAdeImage()}
             alt="Ade"
             className="w-full h-full object-contain"
@@ -556,6 +560,19 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
               filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.5))',
               objectPosition: 'bottom',
             }}
+            animate={adeState === 'idle'
+              ? { opacity: [1, 1, 0.82, 1, 1, 1, 1, 0.82, 1, 1] }
+              : { opacity: 1 }
+            }
+            transition={adeState === 'idle'
+              ? {
+                  duration: 5.3,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  times: [0, 0.3, 0.32, 0.35, 0.5, 0.7, 0.86, 0.88, 0.9, 1],
+                }
+              : { duration: 0.2 }
+            }
           />
           
           {/* Burbuja de Ade — entrada tipo pop con leve overshoot, salida
