@@ -20,6 +20,11 @@ import {
 
 interface GameOverProps {
   score: number;
+  // Métricas crudas de la sesión recién cerrada. Se usa en el Paso 7
+  // para alimentar <Lectura> (3 observaciones data-driven). En este
+  // Paso 4 se acepta como prop pero no se renderiza todavía — eso evita
+  // que el cambio de signature en App.tsx rompa el tipado.
+  metricas?: import('../systems/lectura').MetricasSesion | null;
   onSave: () => void;
   onAnother: () => void;
   onShare: () => void;

@@ -18,7 +18,9 @@ import {
   type ModoJuegoId,
 } from '../systems/modos';
 import { getAnimoActual, getHumorProfile } from '../systems/animo';
+import type { MetricasSesion } from '../systems/lectura';
 import FusionRonda from './FusionRonda';
+import IndicadorAcumulacion from './IndicadorAcumulacion';
 
 // Burst de partículas que aparece en el punto de captura. Cada uno
 // es un punto que radia hacia afuera y se desvanece. 8 puntos por burst.
@@ -31,7 +33,9 @@ interface BurstParticle {
 }
 
 interface GameProps {
-  onEnd: (score: number) => void;
+  // onEnd ahora pasa también las métricas de la sesión para que GameOver
+  // genere la lectura estructurada (3 observaciones data-driven).
+  onEnd: (score: number, metricas: MetricasSesion) => void;
   // Fase 3.1 — Modo de juego activo. Define qué pool de palabras se
   // muestra y mapea cada palabra a un TipoChispa canónico bajo capó.
   // Default 'creatividad' para no romper callers viejos.
@@ -168,6 +172,23 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
   const [animo] = useState(() => getAnimoActual());
   const humor = getHumorProfile(animo);
 
+  // Camino hacia la fusión (0..5). Reemplaza al chequeo `combo % 5 === 0`
+  // como trigger. Filosofía: la acumulación es lineal — un miss NO te
+  // castiga el camino (a diferencia del combo). Solo se reinicia cuando
+  // se cierra una FusionRonda.
+  const [fusionPath, setFusionPath] = useState(0);
+
+  // Métricas crudas de esta sesión para alimentar la lectura final.
+  // Vive en ref (no state) porque ningún render depende de ellas — solo
+  // se leen al cerrar el juego. Evita re-renders innecesarios por captura.
+  const sesionMetricsRef = useRef<MetricasSesion>({
+    capturasPorTipo: {},
+    velocidades: [],
+    saltadasFusion: 0,
+    guardadas: 0,
+    inicio: Date.now(),
+  });
+
   const triggerAdeState = (
     state: 'idle' | 'hunt' | 'eureka' | 'offended',
     duration: number = 2000
@@ -227,8 +248,10 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          // Leemos el score más reciente sin meterlo en deps:
-          onEnd(scoreRef.current);
+          // Leemos el score más reciente sin meterlo en deps + las
+          // métricas crudas de la sesión (lectura.ts las convierte
+          // en 3 observaciones).
+          onEnd(scoreRef.current, sesionMetricsRef.current);
           return 0;
         }
         return prev - 1;
@@ -264,6 +287,11 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
     const deltaMs = ahora - lastCaptureTimeRef.current;
     lastCaptureTimeRef.current = ahora;
     registrarCaptura(spark.tipo, deltaMs);
+
+    // Métricas crudas para la lectura final del GameOver.
+    const m = sesionMetricsRef.current;
+    m.capturasPorTipo[spark.tipo] = (m.capturasPorTipo[spark.tipo] || 0) + 1;
+    m.velocidades.push(deltaMs);
 
     // Buffer ronda 2: empujamos el TIPO canónico, no el label visible.
     // FusionRonda hace toLowerCase + esTipoCanonico para defensa, así
@@ -304,19 +332,23 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
       setTimeout(() => setFlowActive(false), 1800);
     }
 
-    if (newCombo % 5 === 0) {
-      // Camino C híbrido: tras 5 capturas, Ade dice una línea breve y
-      // se abre la Ronda 2 (FusionRonda). Reemplaza el viejo Eureka modal.
-      mostrarFraseDeAde('Ya vi suficiente. Júntalas.');
+    // Fusión por anillo: cada captura suma un arco al IndicadorAcumulacion.
+    // Cuando los 5 arcos están encendidos, abrimos FusionRonda. NO se
+    // muestra texto ("Ya vi suficiente") — el cierre visual del anillo
+    // dorado es la única señal. El usuario aprende el ritmo.
+    // Filosofía (informe §12): cero números, cero frases redundantes.
+    // El miss NO resetea fusionPath — la acumulación es lineal.
+    const newPath = fusionPath + 1;
+    setFusionPath(newPath);
+
+    if (newPath >= 5) {
+      triggerAdeState('eureka', 1100);
       setTimeout(() => {
         setShowFusion(true);
-        triggerAdeState('eureka');
       }, 1100);
     } else {
-      // Antes: random 30% chance + frase genérica del array.
-      // Ahora: siempre intentamos leer del perfil. Si el perfil aún no
-      // tiene señal suficiente, getFraseAde puede devolver '' y la
-      // burbuja simplemente no aparece — preferible al ruido.
+      // Frase de captura — sigue derivada del perfil. Si no hay señal
+      // suficiente, getFraseAde devuelve '' y la burbuja no aparece.
       mostrarFraseDeAde(getFraseAde('captura'));
     }
 
@@ -338,10 +370,18 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
     }
   };
 
-  // Handler de cierre de FusionRonda — usuario decidió saltar.
-  const closeFusion = () => {
+  // Handler de cierre de FusionRonda. El parámetro `guardada` distingue
+  // entre el cierre tras un Save (no cuenta como skip) y un cierre por
+  // X / "Saltar" / tap-out (cuenta como saltadasFusion para la lectura).
+  // Default false — FusionRonda llama a este sin args desde el botón
+  // "Saltar" / X, así que el default cubre ese caso.
+  const closeFusion = (guardada: boolean = false) => {
+    if (!guardada) {
+      sesionMetricsRef.current.saltadasFusion += 1;
+    }
     setShowFusion(false);
     setRecentChispas([]);  // reinicia buffer para la próxima ronda
+    setFusionPath(0);      // anillo vuelve a vacío para el próximo ciclo
     triggerAdeState('idle');
   };
 
@@ -375,8 +415,9 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
     });
 
     registrarIdeaGuardada();
+    sesionMetricsRef.current.guardadas += 1;
     setScore(prev => prev + pointsEarned);
-    closeFusion();
+    closeFusion(true); // marca como guardada — no incrementa saltadasFusion
     mostrarFraseDeAde(getFraseAde('idea'));
   };
 
@@ -470,25 +511,12 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
                 </div>
               </div>
 
-              <div className="w-px h-8 bg-white/10 mx-2" />
-
-              <div className="flex flex-col items-end">
-                {/* Puntaje renombrado a CHISPAS (alma sec.5 — métricas con
-                    significado emocional, no genéricas). */}
-                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Chispas</span>
-                {/* Pulse en cada cambio de score: key={score} fuerza
-                    re-mount, scale arranca en 1.25 y baja a 1 en 0.32s.
-                    Color flash dorado → blanco. Cada captura se SIENTE. */}
-                <motion.span
-                  key={score}
-                  initial={{ scale: 1.28, color: '#FFD600' }}
-                  animate={{ scale: 1, color: '#FFFFFF' }}
-                  transition={{ duration: 0.32, ease: 'easeOut' }}
-                  className="text-2xl font-black leading-none origin-right"
-                >
-                  {score.toLocaleString()}
-                </motion.span>
-              </div>
+              {/* CHISPAS: NN eliminado — decisión editorial (informe §12).
+                  El score interno se mantiene (pasa a GameOver vía onEnd)
+                  pero ya no se muestra durante el juego. La acumulación
+                  hacia la fusión se ve en el anillo dorado del cat, no
+                  en un counter numérico. Filosofía: ADE no premia,
+                  observa. */}
             </div>
           </div>
 
@@ -693,6 +721,25 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
           }
           className="absolute bottom-4 left-4 md:left-12 w-56 md:w-72 aspect-[1.5/1] pointer-events-none z-30"
         >
+          {/* Indicador de acumulación — anillo dorado de 5 arcos que
+              rodea al cat. Cada captura enciende un arco; los 5 cerrados
+              disparan FusionRonda. Sin números visibles.
+              Posicionado en un cuadrado centrado dentro del wrapper
+              (que es 1.5:1) — width 65% del wrapper preserva proporción
+              circular. */}
+          <div
+            className="absolute pointer-events-none z-0"
+            style={{
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '65%',
+              aspectRatio: '1 / 1',
+            }}
+          >
+            <IndicadorAcumulacion path={fusionPath} />
+          </div>
+
           {/* Fase 3.4 — parpadeo sutil solo en idle. Las otras poses
               son transiciones cortas (0.5-0.85s); blink se cortaría.
               Wrapper ya hace la "respiración" (y + scale en idle), así

@@ -10,12 +10,17 @@ import {
   setModoActual,
   type ModoJuegoId,
 } from './systems/modos';
+import type { MetricasSesion } from './systems/lectura';
 
 type Screen = 'home' | 'game' | 'journal' | 'perfil' | 'mapa' | 'gameover';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
   const [lastScore, setLastScore] = useState(0);
+  // Métricas crudas de la última sesión cerrada. GameOver las usa para
+  // generar las 3 observaciones (Lectura). Null hasta que termine la
+  // primera partida del session.
+  const [lastMetricas, setLastMetricas] = useState<MetricasSesion | null>(null);
   // Origen desde el que se abrió Perfil — para que el back vuelva
   // donde el usuario estaba (Home o Journal).
   const [perfilOrigen, setPerfilOrigen] = useState<'home' | 'journal'>('home');
@@ -31,8 +36,9 @@ export default function App() {
     setModoActual(m);
   }, []);
 
-  const handleGameEnd = useCallback((score: number) => {
+  const handleGameEnd = useCallback((score: number, metricas: MetricasSesion) => {
     setLastScore(score);
+    setLastMetricas(metricas);
     // Pasamos por GameOver primero ("ADE detectó algo...") en vez de
     // saltar directo a Bitácora. El usuario decide si guarda, juega
     // otra o comparte.
@@ -98,11 +104,13 @@ export default function App() {
       {currentScreen === 'gameover' && (
         <GameOver
           score={lastScore}
+          metricas={lastMetricas}
           onSave={() => setCurrentScreen('journal')}
           onAnother={() => setCurrentScreen('game')}
           onShare={handleShare}
           onHome={() => {
             setLastScore(0);
+            setLastMetricas(null);
             setCurrentScreen('home');
           }}
         />
