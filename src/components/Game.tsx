@@ -11,6 +11,7 @@ import {
   registrarIdeaGuardada,
   getFraseAde,
 } from '../systems/adeProfile';
+import FusionRonda from './FusionRonda';
 
 interface GameProps {
   onEnd: (score: number) => void;
@@ -30,12 +31,8 @@ interface Spark {
 // modos canónicos y registrarCaptura los hubiera ignorado.
 const SPARK_WORDS = ['CAOS', 'ECO', 'DESEO', 'RITUAL', 'BRILLO', 'RUIDO', 'SECRETO', 'ERROR'];
 
-const SPARK_COLORS = [
-  { type: 'Oro', color: '#FFD740' },
-  { type: 'Azul', color: '#40C4FF' },
-  { type: 'Verde', color: '#69F0AE' },
-  { type: 'Morado', color: '#B088FF' },
-];
+// SPARK_COLORS eliminado en Fase 2 — el viejo currentSparkType ya no
+// existe y el mapping vibe ahora vive en VIBE_DE_MODO abajo.
 
 // Mapping fijo modo → color. Cada chispa tiene siempre el mismo color
 // según su modo, en lugar de uno random por aparición. Pares elegidos
@@ -78,48 +75,23 @@ const MODO_TO_TYPE: Record<string, 'locas' | 'mejores' | 'útiles'> = {
 // Las frases ahora vienen de getFraseAde('captura') que las deriva del
 // perfil real del usuario.
 
-// Prompts del modal Eureka, ahora modo-específicos. Cada modo tiene
-// 2 invitaciones distintas para que "Otra Chispa" alterne sin salir del
-// territorio mental que disparó la captura. Cumple ADE-alma sec.2:
-// las chispas son conceptos, no items intercambiables.
-const PROMPTS_POR_MODO: Record<string, string[]> = {
-  caos: [
-    '¿Qué regla vas a romper para que esto exista?',
-    '¿Y si dejas que lo desorganizado gane?',
-  ],
-  eco: [
-    '¿Para quién resuena? ¿Por qué ahora?',
-    '¿Qué se va a propagar de esto?',
-  ],
-  deseo: [
-    '¿Qué querías realmente? Dilo sin filtro.',
-    '¿Qué sientes que falta? Nómbralo.',
-  ],
-  ritual: [
-    '¿Qué patrón estás repitiendo? Dale forma.',
-    '¿Cómo se vuelve esto un hábito?',
-  ],
-  brillo: [
-    '¿Qué de esto NO existe todavía en el mundo?',
-    '¿Qué tiene esto que no tiene nadie más?',
-  ],
-  ruido: [
-    '¿Qué hay debajo de la distracción?',
-    '¿Qué señal estás filtrando?',
-  ],
-  secreto: [
-    '¿Qué no le has dicho a nadie? Empieza por eso.',
-    '¿Qué te guardas que ya es hora de soltar?',
-  ],
-  error: [
-    '¿Cuál es el giro inesperado que viste?',
-    '¿Qué se rompió y qué descubriste con eso?',
-  ],
-};
+// PROMPTS_POR_MODO eliminado en Fase 2 — los insights de fusión vienen
+// ahora de src/systems/fusiones.ts (matriz de 28 combos canónicos).
+// Camino C híbrido: tras 5 capturas se abre FusionRonda en lugar del
+// viejo Eureka modal con prompt + textarea.
 
-function promptsParaModo(modo: string): string[] {
-  return PROMPTS_POR_MODO[modo.toLowerCase()] ?? PROMPTS_POR_MODO.caos;
-}
+// Mapping vibe (color group) por modo — mantiene compatibilidad con
+// storage.ts que sigue usando vibe para alimentar RadarStats legacy.
+const VIBE_DE_MODO: Record<string, string> = {
+  brillo: 'Oro',
+  deseo: 'Oro',
+  eco: 'Azul',
+  ritual: 'Azul',
+  secreto: 'Verde',
+  ruido: 'Verde',
+  caos: 'Morado',
+  error: 'Morado',
+};
 
 const Game: React.FC<GameProps> = ({ onEnd }) => {
   const [score, setScore] = useState(0);
@@ -129,11 +101,8 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
   const [adeState, setAdeState] = useState<'idle' | 'hunt' | 'eureka' | 'offended'>('idle');
   const [adePhrase, setAdePhrase] = useState('');
   
-  // Eureka Modal
-  const [showEureka, setShowEureka] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState('');
-  const [ideaText, setIdeaText] = useState('');
-  const [currentSparkType, setCurrentSparkType] = useState<{word: string, colorType: string} | null>(null);
+  // Eureka Modal eliminado — reemplazado por FusionRonda (Fase 2).
+  // showFusion + recentChispas (declarados más abajo) cubren su rol.
 
   const adeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -150,6 +119,11 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
   // FLOW MODE — cuando combo cruza de 2 a 3, dispara overlay dorado +
   // pose de eureka temporal de Ade (alma sec.3 + biblia sec.7 — alegría).
   const [flowActive, setFlowActive] = useState(false);
+
+  // Buffer de las últimas 5 chispas capturadas — alimenta la ronda 2
+  // (FusionRonda). Se reinicia tras cada fusión.
+  const [recentChispas, setRecentChispas] = useState<string[]>([]);
+  const [showFusion, setShowFusion] = useState(false);
 
   const triggerAdeState = (
     state: 'idle' | 'hunt' | 'eureka' | 'offended',
@@ -182,7 +156,7 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
   };
 
   const spawnSpark = useCallback(() => {
-    if (showEureka) return; // Don't spawn while in Eureka modal
+    if (showFusion) return; // Don't spawn while in fusion ronda
 
     const word = SPARK_WORDS[Math.floor(Math.random() * SPARK_WORDS.length)];
     // Color fijo por modo: cada chispa siempre tiene el mismo color que
@@ -199,10 +173,10 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
     };
 
     setSparks(prev => [...prev, newSpark]);
-  }, [showEureka]);
+  }, [showFusion]);
 
   useEffect(() => {
-    if (showEureka) return;
+    if (showFusion) return;
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -224,19 +198,10 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
     };
     // 'score' YA NO va en este array; lo leemos por ref.
     // 'onEnd' es seguro porque está memoizado en App.tsx (PARCHE 0).
-  }, [onEnd, spawnSpark, showEureka]);
-
-  const openEureka = () => {
-    setShowEureka(true);
-    triggerAdeState('eureka');
-    // Prompt específico del modo de la chispa que disparó este Eureka.
-    const modo = (currentSparkType?.word || 'caos').toLowerCase();
-    const prompts = promptsParaModo(modo);
-    setCurrentQuestion(prompts[0]);
-  };
+  }, [onEnd, spawnSpark, showFusion]);
 
   const handleSparkClick = (sparkId: number) => {
-    if (showEureka) return;
+    if (showFusion) return;
 
     const spark = sparks.find(s => s.id === sparkId);
     if (!spark) return;
@@ -250,6 +215,9 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
     const deltaMs = ahora - lastCaptureTimeRef.current;
     lastCaptureTimeRef.current = ahora;
     registrarCaptura(spark.label.toLowerCase(), deltaMs);
+
+    // Buffer ronda 2: agregar al historial de las últimas 5 chispas.
+    setRecentChispas(prev => [...prev, spark.label].slice(-5));
 
     const newCombo = combo + 1;
     setCombo(newCombo);
@@ -266,11 +234,13 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
     }
 
     if (newCombo % 5 === 0) {
-      setCurrentSparkType({
-        word: spark.label,
-        colorType: SPARK_COLORS.find(c => c.color === spark.color)?.type || 'Oro'
-      });
-      setTimeout(() => openEureka(), 800);
+      // Camino C híbrido: tras 5 capturas, Ade dice una línea breve y
+      // se abre la Ronda 2 (FusionRonda). Reemplaza el viejo Eureka modal.
+      mostrarFraseDeAde('Ya vi suficiente. Júntalas.');
+      setTimeout(() => {
+        setShowFusion(true);
+        triggerAdeState('eureka');
+      }, 1100);
     } else {
       // Antes: random 30% chance + frase genérica del array.
       // Ahora: siempre intentamos leer del perfil. Si el perfil aún no
@@ -283,7 +253,7 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
   };
 
   const handleMiss = () => {
-    if (showEureka) return;
+    if (showFusion) return;
     setCombo(1);
     triggerAdeState('offended', 2000);
   };
@@ -297,46 +267,46 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
     }
   };
 
-  const saveIdea = () => {
-    // Lectura del modo de la chispa que disparó este Eureka. Si por
-    // legacy currentSparkType no es uno de los 8 canónicos, fallback a
-    // 'locas' (el bucket más permisivo). Las capturas nuevas siempre caen
-    // en alguno de los 8 porque SPARK_WORDS está restringido.
-    const sparkKey = (currentSparkType?.word || '').toLowerCase();
-    const ideaType: 'locas' | 'mejores' | 'útiles' =
-      MODO_TO_TYPE[sparkKey] ?? 'locas';
-
-    const pointsEarned = 25 + (combo * 5);
-    
-    saveIdeaToStorage({
-      id: Date.now(),
-      date: new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }),
-      text: ideaText,
-      spark: currentSparkType?.word || 'Caos',
-      vibe: currentSparkType?.colorType || 'Oro',
-      score: pointsEarned,
-      type: ideaType
-    });
-
-    // Cable a adeProfile: marca que el usuario guardó una idea para
-    // que ideasGuardadas se incremente y las frases que dependen de
-    // ese campo (ej: "Juegas bien. Pero no guardas nada.") puedan
-    // disparar correctamente.
-    registrarIdeaGuardada();
-
-    setScore(prev => prev + pointsEarned);
-    closeEureka();
-
-    // Lectura de Ade tras guardar la idea (alma sec.3 — feedback como
-    // lectura, no como felicitación). La frase se elige según el modo
-    // de la chispa que disparó este Eureka (último en historial).
-    mostrarFraseDeAde(getFraseAde('idea'));
+  // Handler de cierre de FusionRonda — usuario decidió saltar.
+  const closeFusion = () => {
+    setShowFusion(false);
+    setRecentChispas([]);  // reinicia buffer para la próxima ronda
+    triggerAdeState('idle');
   };
 
-  const closeEureka = () => {
-    setShowEureka(false);
-    setIdeaText('');
-    triggerAdeState('idle');
+  // Handler de guardar idea desde FusionRonda. Recibe el insight de la
+  // matriz + el texto del usuario (puede ser vacío) + los 2 modos.
+  // Persiste como idea con spark = modoA dominante (alma sec.5).
+  const handleFusionSave = ({
+    text,
+    insight,
+    modoA,
+  }: {
+    text: string;
+    insight: string;
+    modoA: string;
+    modoB: string;
+  }) => {
+    const ideaType: 'locas' | 'mejores' | 'útiles' =
+      MODO_TO_TYPE[modoA] ?? 'locas';
+    const pointsEarned = 25 + (combo * 5);
+
+    saveIdeaToStorage({
+      id: Date.now(),
+      date: new Date().toLocaleDateString('es-ES', {
+        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+      }),
+      text: text.trim() || insight,  // si el usuario no escribió, guardamos el insight
+      spark: modoA.toUpperCase(),
+      vibe: VIBE_DE_MODO[modoA] ?? 'Oro',
+      score: pointsEarned,
+      type: ideaType,
+    });
+
+    registrarIdeaGuardada();
+    setScore(prev => prev + pointsEarned);
+    closeFusion();
+    mostrarFraseDeAde(getFraseAde('idea'));
   };
 
   return (
@@ -614,67 +584,16 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
         )}
       </AnimatePresence>
 
-      {/* Eureka Modal Overlay */}
+      {/* FusionRonda — Ronda 2 (Camino C). Reemplaza el viejo Eureka modal.
+          Se abre tras 5 capturas; el usuario tapea 2 chispas para fusionar
+          y obtiene el insight de la matriz fusiones.ts. */}
       <AnimatePresence>
-        {showEureka && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 bg-ade-dark/80 backdrop-blur-xl flex items-center justify-center p-6"
-          >
-            <motion.div 
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              className="bg-ade-beige text-ade-dark w-full max-w-md rounded-3xl p-6 shadow-2xl relative overflow-hidden pointer-events-auto"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-ade-gold/20 rounded-full blur-3xl" />
-              
-              <div className="relative z-10 flex flex-col gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-ade-gold rounded-full border-4 border-white shadow-inner flex items-center justify-center overflow-hidden">
-                    <img src={adeEureka} alt="Ade Eureka" className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-ade-accent text-xs tracking-widest uppercase">Ade detectó algo...</h3>
-                    <p className="font-bold text-lg leading-tight mt-1">{currentQuestion}</p>
-                  </div>
-                </div>
-                
-                <textarea 
-                  value={ideaText}
-                  onChange={(e) => setIdeaText(e.target.value)}
-                  placeholder="Escribe tu idea aquí..."
-                  className="w-full bg-white/50 border-2 border-ade-dark/10 rounded-xl p-4 min-h-[120px] resize-none focus:outline-none focus:border-ade-accent transition-colors text-sm font-medium"
-                />
-                
-                <div className="flex flex-col gap-2 mt-2">
-                  <button onClick={saveIdea} disabled={!ideaText.trim()} className="w-full py-4 bg-ade-dark text-white rounded-xl font-black tracking-widest text-xs uppercase hover:bg-black active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none">
-                    Guardar Idea (+25pts)
-                  </button>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        // Cicla entre los 2 prompts del mismo modo en lugar
-                        // de saltar a otra chispa cualquiera.
-                        const modo = (currentSparkType?.word || 'caos').toLowerCase();
-                        const prompts = promptsParaModo(modo);
-                        const idx = prompts.findIndex(p => p === currentQuestion);
-                        const next = prompts[(idx + 1) % prompts.length];
-                        setCurrentQuestion(next);
-                      }}
-                      className="flex-1 py-3 bg-white border-2 border-ade-dark/10 text-ade-dark rounded-xl font-bold tracking-widest text-xs uppercase hover:bg-gray-50 active:scale-[0.98] transition-all"
-                    >
-                      Otra Chispa
-                    </button>
-                    <button onClick={closeEureka} className="flex-1 py-3 bg-transparent text-ade-dark/50 rounded-xl font-bold tracking-widest text-xs uppercase hover:text-ade-dark active:scale-[0.98] transition-all">
-                      Saltar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
+        {showFusion && (
+          <FusionRonda
+            chispas={recentChispas}
+            onSave={handleFusionSave}
+            onClose={closeFusion}
+          />
         )}
       </AnimatePresence>
     </div>
