@@ -5,6 +5,11 @@ import Journal from './components/Journal';
 import Perfil from './components/Perfil';
 import Mapa from './components/Mapa';
 import GameOver from './components/GameOver';
+import {
+  getModoActual,
+  setModoActual,
+  type ModoJuegoId,
+} from './systems/modos';
 
 type Screen = 'home' | 'game' | 'journal' | 'perfil' | 'mapa' | 'gameover';
 
@@ -17,6 +22,14 @@ export default function App() {
   // Mismo patrón para Mapa: hoy solo se entra desde Journal, pero
   // dejamos el estado por si después se agrega acceso directo.
   const [mapaOrigen, setMapaOrigen] = useState<'home' | 'journal'>('journal');
+  // Fase 3.1 — Modo de juego activo. Se inicializa desde localStorage
+  // (default 'creatividad') y se persiste al cambiar.
+  const [modo, setModo] = useState<ModoJuegoId>(() => getModoActual());
+
+  const handleModoChange = useCallback((m: ModoJuegoId) => {
+    setModo(m);
+    setModoActual(m);
+  }, []);
 
   const handleGameEnd = useCallback((score: number) => {
     setLastScore(score);
@@ -52,11 +65,14 @@ export default function App() {
             setPerfilOrigen('home');
             setCurrentScreen('perfil');
           }}
+          modo={modo}
+          onModoChange={handleModoChange}
         />
       )}
       {currentScreen === 'game' && (
-        <Game 
+        <Game
           onEnd={handleGameEnd}
+          modo={modo}
         />
       )}
       {currentScreen === 'journal' && (

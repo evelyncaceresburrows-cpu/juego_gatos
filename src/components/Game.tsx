@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Timer, Zap, Pause, ChevronLeft } from 'lucide-react';
 import adeEureka from '../assets/ade/characters/ade-eureka.png';
@@ -10,26 +10,41 @@ import {
   registrarCaptura,
   registrarIdeaGuardada,
   getFraseAde,
+  type TipoChispa,
 } from '../systems/adeProfile';
+import {
+  getPalabrasParaModo,
+  MODOS,
+  type ModoJuegoId,
+} from '../systems/modos';
 import FusionRonda from './FusionRonda';
 
 interface GameProps {
   onEnd: (score: number) => void;
+  // Fase 3.1 — Modo de juego activo. Define qué pool de palabras se
+  // muestra y mapea cada palabra a un TipoChispa canónico bajo capó.
+  // Default 'creatividad' para no romper callers viejos.
+  modo?: ModoJuegoId;
 }
 
 interface Spark {
   id: number;
   x: number;
   y: number;
+  // word = lo que se dibuja (puede ser PIVOT, RESPIRO, CAOS…).
+  // tipo = la chispa canónica (caos, eco, deseo, ritual, brillo, ruido,
+  //         secreto, error). El perfil y la fusión usan tipo, no word.
   label: string;
+  tipo: TipoChispa;
   color: string;
   size: number;
 }
 
-// Reducido a los 8 modos mentales del alma (ADE-alma.md sección 2).
-// 'Sombra' / 'Mapa' / 'Juego' / 'Pulso' se quitaron porque no son
-// modos canónicos y registrarCaptura los hubiera ignorado.
-const SPARK_WORDS = ['CAOS', 'ECO', 'DESEO', 'RITUAL', 'BRILLO', 'RUIDO', 'SECRETO', 'ERROR'];
+// SPARK_WORDS (legacy) reemplazado por modos.ts en Fase 3.1.
+// Cada modo de juego define su propio pool de palabras (PalabraModo[]).
+// El array se obtiene con getPalabrasParaModo(modo) dentro del componente,
+// que recibe `modo` como prop. La psicología canónica (8 TipoChispa)
+// vive ahora en .tipo de cada PalabraModo.
 
 // SPARK_COLORS eliminado en Fase 2 — el viejo currentSparkType ya no
 // existe y el mapping vibe ahora vive en VIBE_DE_MODO abajo.
@@ -93,7 +108,13 @@ const VIBE_DE_MODO: Record<string, string> = {
   error: 'Morado',
 };
 
-const Game: React.FC<GameProps> = ({ onEnd }) => {
+const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
+  // Pool de palabras para este modo. useMemo: solo se recalcula si el
+  // modo cambia. En la práctica el modo es estable durante una partida
+  // (se elige en Home antes de entrar), pero el memo defiende el caso.
+  const palabras = useMemo(() => getPalabrasParaModo(modo), [modo]);
+  const modoLabel = MODOS[modo].label;
+
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [combo, setCombo] = useState(1);
@@ -158,22 +179,24 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
   const spawnSpark = useCallback(() => {
     if (showFusion) return; // Don't spawn while in fusion ronda
 
-    const word = SPARK_WORDS[Math.floor(Math.random() * SPARK_WORDS.length)];
-    // Color fijo por modo: cada chispa siempre tiene el mismo color que
-    // su modo (alma sec.2 — chispas son conceptos, no items random).
-    const color = MODO_COLOR[word.toLowerCase()] ?? '#FFD740';
+    // Pickeamos una PalabraModo del pool del modo activo. La palabra
+    // visible (.word) puede ser PIVOT, RESPIRO, etc. El tipo canónico
+    // (.tipo) es siempre uno de los 8 — sirve para color, perfil, fusión.
+    const palabra = palabras[Math.floor(Math.random() * palabras.length)];
+    const color = MODO_COLOR[palabra.tipo] ?? '#FFD740';
 
     const newSpark: Spark = {
       id: Date.now(),
       x: 15 + Math.random() * 70,
       y: 20 + Math.random() * 45,
       size: 50 + Math.random() * 30,
-      label: word,
+      label: palabra.word,
+      tipo: palabra.tipo,
       color: color,
     };
 
     setSparks(prev => [...prev, newSpark]);
-  }, [showFusion]);
+  }, [showFusion, palabras]);
 
   useEffect(() => {
     if (showFusion) return;
@@ -208,16 +231,18 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
     triggerAdeState('hunt', 1000);
 
     // CABLE A adeProfile: registramos la captura con su delta de tiempo
-    // desde la captura anterior. La primera captura mide tiempo desde
-    // el mount del componente. registrarCaptura ignora silenciosamente
-    // tipos no canónicos, pero SPARK_WORDS ya está restringido a los 8.
+    // desde la captura anterior. spark.tipo ya es canónico (lowercase
+    // entre los 8) gracias al sistema modos.ts — no más toLowerCase.
     const ahora = Date.now();
     const deltaMs = ahora - lastCaptureTimeRef.current;
     lastCaptureTimeRef.current = ahora;
-    registrarCaptura(spark.label.toLowerCase(), deltaMs);
+    registrarCaptura(spark.tipo, deltaMs);
 
-    // Buffer ronda 2: agregar al historial de las últimas 5 chispas.
-    setRecentChispas(prev => [...prev, spark.label].slice(-5));
+    // Buffer ronda 2: empujamos el TIPO canónico, no el label visible.
+    // FusionRonda hace toLowerCase + esTipoCanonico para defensa, así
+    // que pasarle el tipo directo evita que palabras tipo "PIVOT" o
+    // "RESPIRO" sean filtradas por no matchear ninguno de los 8.
+    setRecentChispas(prev => [...prev, spark.tipo].slice(-5));
 
     const newCombo = combo + 1;
     setCombo(newCombo);
@@ -344,6 +369,18 @@ const Game: React.FC<GameProps> = ({ onEnd }) => {
             zIndex: 0,
           }}
         />
+      </div>
+
+      {/* Modo activo — chip discreto. Tipografía mínima en blanco/40,
+          uppercase, tracking ancho. Biblia: el contexto se susurra,
+          no se grita. */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+        <span
+          className="text-[9px] font-black uppercase tracking-[0.4em]"
+          style={{ color: 'rgba(255, 255, 255, 0.45)' }}
+        >
+          Modo · {modoLabel}
+        </span>
       </div>
 
       {/* PROFESSIONAL HUD */}

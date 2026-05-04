@@ -3,15 +3,26 @@ import { motion } from 'framer-motion';
 import { Play, Sparkles, Crown, Book, Settings } from 'lucide-react';
 import adeIdle from '../assets/ade/characters/ade-idle.png';
 import { getFraseAde } from '../systems/adeProfile';
+import { MODOS, MODOS_LIST, type ModoJuegoId } from '../systems/modos';
 
 interface HomeProps {
   onStart: () => void;
   onJournal: () => void;
   // Acceso directo a la pantalla Perfil desde el botón de corona.
   onPerfil?: () => void;
+  // Fase 3.1 — modo activo + handler para cambiarlo. Si no se pasan,
+  // Home se renderiza sin selector (compat con callers viejos).
+  modo?: ModoJuegoId;
+  onModoChange?: (m: ModoJuegoId) => void;
 }
 
-const Home: React.FC<HomeProps> = ({ onStart, onJournal, onPerfil }) => {
+const Home: React.FC<HomeProps> = ({
+  onStart,
+  onJournal,
+  onPerfil,
+  modo = 'creatividad',
+  onModoChange,
+}) => {
   // Mejora 05 — toast efímero para botones aún no implementados.
   const [toast, setToast] = useState<string | null>(null);
 
@@ -292,6 +303,48 @@ const Home: React.FC<HomeProps> = ({ onStart, onJournal, onPerfil }) => {
         transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
         className="relative z-10 w-full max-w-xs flex flex-col items-center gap-3"
       >
+        {/* ── Modo selector — Fase 3.1.
+            Pill row de 5 modos. El activo se rellena en dorado, los demás
+            quedan con borde sutil. Tagline del modo activo abajo, biblia tone.
+            Solo se muestra si Home recibió onModoChange (compat). */}
+        {onModoChange && (
+          <div className="w-full flex flex-col items-center gap-2 mb-1">
+            <div className="flex items-center justify-center gap-1.5 flex-wrap">
+              {MODOS_LIST.map(m => {
+                const activo = m.id === modo;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => onModoChange(m.id)}
+                    className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.18em] transition-all active:scale-95"
+                    style={{
+                      background: activo
+                        ? 'linear-gradient(180deg, #FFE042 0%, #FFD600 100%)'
+                        : 'rgba(255, 255, 255, 0.55)',
+                      color: activo ? '#1A1A1A' : 'rgba(26, 35, 50, 0.55)',
+                      border: activo
+                        ? '1px solid rgba(245, 196, 0, 0.5)'
+                        : '1px solid rgba(26, 35, 50, 0.08)',
+                      boxShadow: activo
+                        ? '0 2px 6px rgba(255, 214, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.6) inset'
+                        : '0 1px 0 rgba(255, 255, 255, 0.6) inset',
+                    }}
+                  >
+                    {m.label}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Tagline del modo activo. Italic, biblia tone. */}
+            <p
+              className="text-[10px] italic text-ade-dark/55 text-center"
+              style={{ minHeight: '1em' }}
+            >
+              {MODOS[modo].tagline}
+            </p>
+          </div>
+        )}
+
         {/* JUGAR — botón premium de máxima prioridad.
             Multi-layer shadow: highlight inner top + bottom inner + 3D depth +
             ambient golden glow + grounding + gradient vertical sutil.
