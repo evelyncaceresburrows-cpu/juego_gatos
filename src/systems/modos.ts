@@ -116,7 +116,7 @@ export const MODOS: Record<ModoJuegoId, ModoJuego> = {
   ansiedad: {
     id: 'ansiedad',
     label: 'Ansiedad',
-    tagline: 'Respira. Mirá. Soltá.',
+    tagline: 'Respira. Mira. Suelta.',
     palabras: PALABRAS_ANSIEDAD,
   },
   decisiones: {
@@ -185,8 +185,8 @@ export const FRASES_POR_MODO: Record<ModoJuegoId, FrasesPorContexto> = {
   creatividad: {
     inicio: [
       'Empezamos. Sin filtros.',
-      'Vení a romper algo.',
-      'Soltá la mano.',
+      'Ven a romper algo.',
+      'Suelta la mano.',
     ],
     captura: [
       'Brillo bruto.',
@@ -207,9 +207,9 @@ export const FRASES_POR_MODO: Record<ModoJuegoId, FrasesPorContexto> = {
   },
   negocio: {
     inicio: [
-      'Otra vez. Mostrame el patrón.',
-      'Veamos qué traction junta.',
-      'Entrá. Mediremos.',
+      'Otra vez. Muéstrame el patrón.',
+      'Veamos qué tracción junta.',
+      'Entra. Mediremos.',
       'Sin hipótesis no hay data.',
     ],
     captura: [
@@ -227,16 +227,16 @@ export const FRASES_POR_MODO: Record<ModoJuegoId, FrasesPorContexto> = {
     ],
     idea: [
       'Idea con tracción.',
-      'Probala. Medila.',
+      'Pruébala. Mídela.',
       'Eso vale algo.',
-      'Llevala a alguien.',
+      'Llévala a alguien.',
     ],
   },
   ansiedad: {
     inicio: [
-      'Respirá. Estoy acá.',
+      'Respira. Estoy aquí.',
       'Sin apuro hoy.',
-      'Volvés. Bien.',
+      'Vuelves. Bien.',
       'Ya estás.',
     ],
     captura: [
@@ -249,14 +249,14 @@ export const FRASES_POR_MODO: Record<ModoJuegoId, FrasesPorContexto> = {
     fin: [
       'Cerramos suave.',
       'Bastó por hoy.',
-      'Volvé cuando quieras.',
+      'Vuelve cuando quieras.',
       'Lo hiciste.',
     ],
     idea: [
-      'Soltala.',
+      'Suéltala.',
       'Ya está afuera.',
       'Eso pesaba.',
-      'Respirá. Anotaste.',
+      'Respira. Anotaste.',
     ],
   },
   decisiones: {
@@ -264,18 +264,18 @@ export const FRASES_POR_MODO: Record<ModoJuegoId, FrasesPorContexto> = {
       'Decidamos.',
       'Una cosa o la otra.',
       'Sin más vueltas.',
-      'Treinta segundos. Decidí.',
+      'Treinta segundos. Decide.',
     ],
     captura: [
-      'Apuntá esa.',
+      'Apunta esa.',
       'Costo o riesgo.',
       'La intuición habló.',
       'Dato fresco.',
       'Otra opción menos.',
     ],
     fin: [
-      'Tenés con qué decidir.',
-      'Si no decidís, decide otro.',
+      'Tienes con qué decidir.',
+      'Si no decides, decide otro.',
       'Salió un mapa.',
       'Hora de elegir.',
     ],

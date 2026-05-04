@@ -134,7 +134,7 @@ const FusionRonda: React.FC<FusionRondaProps> = ({ chispas, onSave, onClose }) =
               className="flex flex-col items-center justify-center flex-1 gap-8"
             >
               <p className="text-white/85 text-lg italic text-center font-medium leading-snug max-w-[260px]">
-                Tocá dos. Júntalas.
+                Toca dos. Júntalas.
               </p>
 
               {/* Grid de las 5 chispas */}

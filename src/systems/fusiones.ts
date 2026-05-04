@@ -29,32 +29,32 @@ const FUSIONES_PREMIUM: Record<string, string> = {
   'caos+ritual':  'El orden te ata. El caos te libera.',
   'caos+brillo':  'Lo nuevo viene del desorden.',
   'caos+ruido':   'Demasiado. Pero ahí estaba.',
-  'caos+secreto': 'Lo que escondés es lo que rompe.',
+  'caos+secreto': 'Lo que escondes es lo que rompe.',
   'caos+error':   'Sin reglas. Sin freno.',
 
   // ── eco × * (sin caos, ya cubierto) ──
   'deseo+eco':    'Lo que querés ya está sonando.',
-  'eco+ritual':   'Repetilo y será verdad.',
+  'eco+ritual':   'Repítelo y será verdad.',
   'brillo+eco':   'Idea nueva, voz vieja.',
   'eco+ruido':    'Mucha gente. Bajá el volumen.',
   'eco+secreto':  'Lo no dicho también ecoa.',
   'eco+error':    'Aprende mostrando.',                       // user
 
   // ── deseo × * ──
-  'deseo+ritual': 'Quererlo no basta. Hacelo.',
+  'deseo+ritual': 'Quererlo no basta. Hazlo.',
   'brillo+deseo': 'Lo que más brilla es lo que querés.',
   'deseo+ruido':  'Querer sin saber qué.',
-  'deseo+secreto':'Decilo o muere contigo.',
+  'deseo+secreto':'Dilo o muere contigo.',
   'deseo+error':  'Querer mal. A veces ahí está.',
 
   // ── ritual × * ──
   'brillo+ritual':'Lo constante también ilumina.',            // user
-  'ritual+ruido': 'Forma rota. Reconstruila distinta.',
-  'ritual+secreto':'Lo que repetís dice lo que callás.',
+  'ritual+ruido': 'Forma rota. Reconstrúyela distinta.',
+  'ritual+secreto':'Lo que repites dice lo que callas.',
   'error+ritual': 'Romper el patrón es el patrón.',
 
   // ── brillo × * ──
-  'brillo+ruido': 'Mucha luz. Filtrala.',
+  'brillo+ruido': 'Mucha luz. Fíltrala.',
   'brillo+secreto':'Ya quiere salir.',                        // user
   'brillo+error': 'Los mejores giros son los no planeados.',
 
@@ -69,13 +69,13 @@ const FUSIONES_PREMIUM: Record<string, string> = {
 // Auto-pares (X + X) — el jugador eligió la misma chispa dos veces.
 // Es un patrón en sí mismo: insistencia. Tono biblia.
 const AUTO_FUSIONES: Record<TipoChispa, string> = {
-  caos:    'Doble Caos. Insistís en romper.',
-  eco:     'Doble Eco. Lo que decís se repite.',
+  caos:    'Doble Caos. Insistes en romper.',
+  eco:     'Doble Eco. Lo que dices se repite.',
   deseo:   'Doble Deseo. Lo querés mucho.',
   ritual:  'Doble Ritual. La forma te sostiene.',
   brillo:  'Doble Brillo. Buscás lo nuevo dos veces.',
   ruido:   'Doble Ruido. Hay algo bajo.',
-  secreto: 'Doble Secreto. Lo guardás profundo.',
+  secreto: 'Doble Secreto. Lo guardas profundo.',
   error:   'Doble Error. Sigue mostrándote algo.',
 };
 

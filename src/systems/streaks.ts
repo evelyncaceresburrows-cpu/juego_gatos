@@ -38,13 +38,13 @@ export const UNLOCKS: UnlockDef[] = [
     diaRequerido: 7,
     id: 'racha_semana',
     nombre: 'Una semana',
-    descripcion: 'Siete días. Volvés.',
+    descripcion: 'Siete días. Vuelves.',
   },
   {
     diaRequerido: 14,
     id: 'frase_secreta',
     nombre: 'Frase secreta',
-    descripcion: 'Catorce días. Ade tiene algo que solo te dice a vos.',
+    descripcion: 'Catorce días. Ade tiene algo que solo te dice a ti.',
   },
   {
     diaRequerido: 30,
@@ -61,9 +61,9 @@ export const UNLOCKS: UnlockDef[] = [
 // reconocen que la relación tiene tiempo encima.
 
 export const FRASES_SECRETAS_INICIO: string[] = [
-  'Volvés. Pero algo cambia cada vez.',
-  'Sé cómo pensás. Lo veo.',
-  'Ya no sos turista.',
+  'Vuelves. Pero algo cambia cada vez.',
+  'Sé cómo piensas. Lo veo.',
+  'Ya no eres turista.',
   'Hay un patrón. Ya lo viste.',
 ];
 

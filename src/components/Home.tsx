@@ -412,7 +412,7 @@ const Home: React.FC<HomeProps> = ({
                 className="text-[10px] italic"
                 style={{ color: 'rgba(26, 35, 50, 0.55)' }}
               >
-                · Volvés.
+                · Vuelves.
               </span>
             </motion.div>
             {proximoUnlock && (
