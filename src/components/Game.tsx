@@ -17,7 +17,18 @@ import {
   MODOS,
   type ModoJuegoId,
 } from '../systems/modos';
+import { getAnimoActual, getHumorProfile } from '../systems/animo';
 import FusionRonda from './FusionRonda';
+
+// Burst de partículas que aparece en el punto de captura. Cada uno
+// es un punto que radia hacia afuera y se desvanece. 8 puntos por burst.
+interface BurstParticle {
+  id: number;
+  x: number;          // % del canvas
+  y: number;
+  color: string;
+  pts: number;        // puntos ganados (para el float +N)
+}
 
 interface GameProps {
   onEnd: (score: number) => void;
@@ -146,6 +157,17 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
   const [recentChispas, setRecentChispas] = useState<string[]>([]);
   const [showFusion, setShowFusion] = useState(false);
 
+  // Bursts de captura — feedback inmediato. Cada captura pushea un burst
+  // con coords del spark + color + pts ganados. Se auto-limpian a los
+  // ~900ms para que el array no crezca indefinidamente.
+  const [bursts, setBursts] = useState<BurstParticle[]>([]);
+
+  // Ánimo de Ade leído del perfil al mount. Se mantiene estable durante
+  // la partida — Ade no cambia de humor en medio de la sesión, eso se
+  // sentiría caprichoso. Cada partida nueva lee el ánimo más actual.
+  const [animo] = useState(() => getAnimoActual());
+  const humor = getHumorProfile(animo);
+
   const triggerAdeState = (
     state: 'idle' | 'hunt' | 'eureka' | 'offended',
     duration: number = 2000
@@ -213,7 +235,12 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
       });
     }, 1000);
 
-    const sparkInterval = setInterval(spawnSpark, 1200);
+    // Spawn rate ajustado por el ánimo de Ade. filoso/ansioso → más rápido,
+    // sereno/atento → más lento. Base 1200ms × spawnFactor.
+    const sparkInterval = setInterval(
+      spawnSpark,
+      Math.round(1200 * humor.spawnFactor)
+    );
 
     return () => {
       clearInterval(timer);
@@ -221,7 +248,7 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
     };
     // 'score' YA NO va en este array; lo leemos por ref.
     // 'onEnd' es seguro porque está memoizado en App.tsx (PARCHE 0).
-  }, [onEnd, spawnSpark, showFusion]);
+  }, [onEnd, spawnSpark, showFusion, humor.spawnFactor]);
 
   const handleSparkClick = (sparkId: number) => {
     if (showFusion) return;
@@ -246,7 +273,26 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
 
     const newCombo = combo + 1;
     setCombo(newCombo);
-    setScore(prev => prev + 10 + (newCombo * 2));
+    const ptsGanados = 10 + (newCombo * 2);
+    setScore(prev => prev + ptsGanados);
+
+    // Burst de partículas en el punto del spark — feedback inmediato
+    // (decisión usuario: "el caos no es un botón"). Cada captura SIENTE.
+    // Auto-cleanup a los 900ms para que el array no crezca.
+    const burstId = ahora + Math.floor(Math.random() * 1000);
+    setBursts(prev => [
+      ...prev,
+      {
+        id: burstId,
+        x: spark.x,
+        y: spark.y,
+        color: spark.color,
+        pts: ptsGanados,
+      },
+    ]);
+    setTimeout(() => {
+      setBursts(prev => prev.filter(b => b.id !== burstId));
+    }, 900);
 
     // FLOW MODE: al cruzar de 2 a 3 capturas seguidas, dispara overlay
     // dorado + pose eureka de Ade. Ahora seguro porque ade-eureka.png
@@ -374,13 +420,24 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
       {/* Modo activo — chip discreto. Tipografía mínima en blanco/40,
           uppercase, tracking ancho. Biblia: el contexto se susurra,
           no se grita. */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex flex-col items-center">
         <span
           className="text-[9px] font-black uppercase tracking-[0.4em]"
           style={{ color: 'rgba(255, 255, 255, 0.45)' }}
         >
           Modo · {modoLabel}
         </span>
+        {/* Adjetivo del ánimo — susurra el humor de Ade. Solo visible
+            cuando el perfil tiene un dominante claro (sin esto, sería
+            ruido para usuarios nuevos). Tono biblia: se nota o no se nota. */}
+        {humor.adjetivo && (
+          <span
+            className="text-[8px] italic mt-0.5"
+            style={{ color: 'rgba(255, 255, 255, 0.32)' }}
+          >
+            {humor.adjetivo}
+          </span>
+        )}
       </div>
 
       {/* PROFESSIONAL HUD */}
@@ -419,7 +476,18 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
                 {/* Puntaje renombrado a CHISPAS (alma sec.5 — métricas con
                     significado emocional, no genéricas). */}
                 <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Chispas</span>
-                <span className="text-2xl font-black leading-none text-white">{score.toLocaleString()}</span>
+                {/* Pulse en cada cambio de score: key={score} fuerza
+                    re-mount, scale arranca en 1.25 y baja a 1 en 0.32s.
+                    Color flash dorado → blanco. Cada captura se SIENTE. */}
+                <motion.span
+                  key={score}
+                  initial={{ scale: 1.28, color: '#FFD600' }}
+                  animate={{ scale: 1, color: '#FFFFFF' }}
+                  transition={{ duration: 0.32, ease: 'easeOut' }}
+                  className="text-2xl font-black leading-none origin-right"
+                >
+                  {score.toLocaleString()}
+                </motion.span>
               </div>
             </div>
           </div>
@@ -461,6 +529,83 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
 
       {/* GAMEPLAY CANVAS */}
       <main className="relative z-10 flex-1 h-[60vh] overflow-visible pointer-events-auto">
+        {/* ── Bursts de captura — feedback inmediato.
+            Cada captura genera un burst que renderiza en el punto del
+            spark: 8 partículas radiando + número flotante con los pts.
+            pointer-events-none para que no bloquee otros sparks. */}
+        <AnimatePresence>
+          {bursts.map(burst => (
+            <div
+              key={burst.id}
+              className="absolute pointer-events-none z-20"
+              style={{
+                left: `${burst.x}%`,
+                top: `${burst.y}%`,
+                transform: 'translate(-50%, -50%)',
+              }}
+            >
+              {/* Partículas radiando — 8 puntos en círculo */}
+              {[0, 1, 2, 3, 4, 5, 6, 7].map(i => {
+                const angle = (i / 8) * Math.PI * 2;
+                const dx = Math.cos(angle) * 42;
+                const dy = Math.sin(angle) * 42;
+                return (
+                  <motion.div
+                    key={i}
+                    className="absolute rounded-full"
+                    style={{
+                      width: '6px',
+                      height: '6px',
+                      background: burst.color,
+                      boxShadow: `0 0 8px ${burst.color}`,
+                      left: '50%',
+                      top: '50%',
+                      marginLeft: '-3px',
+                      marginTop: '-3px',
+                    }}
+                    initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+                    animate={{ x: dx, y: dy, scale: 0, opacity: 0 }}
+                    transition={{ duration: 0.6, ease: 'easeOut' }}
+                  />
+                );
+              })}
+              {/* Anillo expansivo central — pulse de eco */}
+              <motion.div
+                className="absolute rounded-full border-2"
+                style={{
+                  borderColor: burst.color,
+                  left: '50%',
+                  top: '50%',
+                  width: '14px',
+                  height: '14px',
+                  marginLeft: '-7px',
+                  marginTop: '-7px',
+                }}
+                initial={{ scale: 0.5, opacity: 0.85 }}
+                animate={{ scale: 4.5, opacity: 0 }}
+                transition={{ duration: 0.55, ease: 'easeOut' }}
+              />
+              {/* +pts flotante — texto subiendo + fade */}
+              <motion.span
+                className="absolute font-black text-base"
+                style={{
+                  color: burst.color,
+                  textShadow: '0 2px 6px rgba(0,0,0,0.55)',
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  whiteSpace: 'nowrap',
+                }}
+                initial={{ y: 0, opacity: 0, scale: 0.7 }}
+                animate={{ y: -36, opacity: [0, 1, 1, 0], scale: 1.05 }}
+                transition={{ duration: 0.85, times: [0, 0.15, 0.7, 1], ease: 'easeOut' }}
+              >
+                +{burst.pts}
+              </motion.span>
+            </div>
+          ))}
+        </AnimatePresence>
+
         <AnimatePresence>
           {sparks.map(spark => (
             <motion.div
@@ -566,7 +711,10 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
             }
             transition={adeState === 'idle'
               ? {
-                  duration: 5.3,
+                  // duración del ciclo de parpadeo viene del ánimo de
+                  // Ade. filoso/ansioso → más rápido, sereno/atento →
+                  // más lento. Convertimos ms → s para framer.
+                  duration: humor.parpadeoMs / 1000,
                   repeat: Infinity,
                   ease: 'easeInOut',
                   times: [0, 0.3, 0.32, 0.35, 0.5, 0.7, 0.86, 0.88, 0.9, 1],
