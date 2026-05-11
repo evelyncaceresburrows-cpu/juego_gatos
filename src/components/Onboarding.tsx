@@ -117,7 +117,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
       {/* Skip arriba derecha */}
       <button
         onClick={onComplete}
-        className="absolute top-6 right-6 text-[10px] font-black uppercase tracking-[0.4em] text-ade-dark/45 hover:text-ade-dark/75 transition-colors"
+        className="absolute top-6 right-6 min-h-[44px] min-w-[44px] px-3 flex items-center justify-center text-[10px] font-black uppercase tracking-[0.4em] text-ade-dark/45 hover:text-ade-dark/75 transition-colors"
       >
         Saltar
       </button>

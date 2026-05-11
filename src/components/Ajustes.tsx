@@ -177,7 +177,7 @@ const Ajustes: React.FC<AjustesProps> = ({ onBack }) => {
           {!confirmReset && !resetDone && (
             <button
               onClick={() => setConfirmReset(true)}
-              className="self-start px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-widest"
+              className="self-start px-4 py-2 min-h-[44px] rounded-full text-[11px] font-black uppercase tracking-widest"
               style={{
                 background: 'rgba(220, 60, 60, 0.08)',
                 color: '#DC3C3C',
@@ -192,14 +192,14 @@ const Ajustes: React.FC<AjustesProps> = ({ onBack }) => {
             <div className="flex gap-2 self-stretch">
               <button
                 onClick={reset}
-                className="flex-1 py-2 rounded-full text-[11px] font-black uppercase tracking-widest"
+                className="flex-1 py-2 min-h-[44px] rounded-full text-[11px] font-black uppercase tracking-widest"
                 style={{ background: '#DC3C3C', color: '#FFFFFF' }}
               >
                 Sí, borrar
               </button>
               <button
                 onClick={() => setConfirmReset(false)}
-                className="flex-1 py-2 rounded-full text-[11px] font-black uppercase tracking-widest"
+                className="flex-1 py-2 min-h-[44px] rounded-full text-[11px] font-black uppercase tracking-widest"
                 style={{
                   background: 'transparent',
                   color: 'rgba(26,35,50,0.5)',

@@ -84,7 +84,7 @@ const GameOver: React.FC<GameOverProps> = ({
         <button
           onClick={onHome}
           aria-label="Volver al inicio"
-          className="absolute top-5 left-5 z-30 w-10 h-10 rounded-full flex items-center justify-center transition-transform active:scale-90"
+          className="absolute top-5 left-5 z-30 w-11 h-11 rounded-full flex items-center justify-center transition-transform active:scale-90"
           style={{
             background: 'rgba(255, 255, 255, 0.06)',
             border: '1px solid rgba(255, 255, 255, 0.12)',
@@ -201,7 +201,7 @@ const GameOver: React.FC<GameOverProps> = ({
         <div className="flex gap-3">
           <button
             onClick={onSave}
-            className="flex-1 py-3 rounded-2xl font-black tracking-widest text-[11px] uppercase flex items-center justify-center gap-1.5 transition-all active:scale-95 hover:bg-white/15"
+            className="flex-1 py-3 min-h-[44px] rounded-2xl font-black tracking-widest text-[11px] uppercase flex items-center justify-center gap-1.5 transition-all active:scale-95 hover:bg-white/15"
             style={{
               background: 'rgba(255, 255, 255, 0.06)',
               color: '#FFFFFF',
@@ -213,7 +213,7 @@ const GameOver: React.FC<GameOverProps> = ({
           </button>
           <button
             onClick={onShare}
-            className="flex-1 py-3 rounded-2xl font-black tracking-widest text-[11px] uppercase flex items-center justify-center gap-1.5 transition-all active:scale-95 hover:bg-white/15"
+            className="flex-1 py-3 min-h-[44px] rounded-2xl font-black tracking-widest text-[11px] uppercase flex items-center justify-center gap-1.5 transition-all active:scale-95 hover:bg-white/15"
             style={{
               background: 'rgba(255, 255, 255, 0.06)',
               color: '#FFFFFF',
@@ -229,7 +229,7 @@ const GameOver: React.FC<GameOverProps> = ({
         {onHome && (
           <button
             onClick={onHome}
-            className="w-full py-2 text-[11px] font-bold tracking-widest uppercase text-white/45 transition-colors hover:text-white/80"
+            className="w-full py-2 min-h-[44px] text-[11px] font-bold tracking-widest uppercase text-white/45 transition-colors hover:text-white/80"
           >
             Volver al inicio
           </button>

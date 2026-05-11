@@ -351,7 +351,7 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
             <button
               onClick={exportarBitacoraMD}
               title="Descargar como Markdown"
-              className="bg-white/50 p-2 rounded-xl text-ade-dark/50 hover:text-ade-dark hover:bg-white transition-all"
+              className="bg-white/50 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-ade-dark/50 hover:text-ade-dark hover:bg-white transition-all"
             >
               <Download className="w-4 h-4" />
             </button>
@@ -359,7 +359,7 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
             <button
               onClick={exportarBitacoraPDF}
               title="Imprimir o guardar como PDF"
-              className="bg-white/50 p-2 rounded-xl text-ade-dark/50 hover:text-ade-dark hover:bg-white transition-all"
+              className="bg-white/50 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-ade-dark/50 hover:text-ade-dark hover:bg-white transition-all"
             >
               <Printer className="w-4 h-4" />
             </button>
@@ -432,7 +432,7 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
               <button 
                 key={f}
                 onClick={() => setFilter(f as any)}
-                className={`px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all whitespace-nowrap ${filter === f ? 'bg-ade-dark text-white shadow-md' : 'bg-white/50 text-ade-dark/50 hover:bg-white'}`}
+                className={`px-4 min-h-[44px] rounded-full text-[10px] font-black tracking-widest uppercase transition-all whitespace-nowrap flex items-center justify-center ${filter === f ? 'bg-ade-dark text-white shadow-md' : 'bg-white/50 text-ade-dark/50 hover:bg-white'}`}
               >
                 {f}
               </button>
@@ -501,11 +501,11 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
           (App root tiene relative + max-w 430px) en lugar de extenderse
           a todo el viewport en desktop. */}
       <nav className="absolute bottom-0 left-0 w-full bg-ade-beige/90 backdrop-blur-xl border-t border-ade-dark/5 p-4 px-8 flex justify-between items-center z-50">
-        <button onClick={onBack} className="flex flex-col items-center gap-1 opacity-40 hover:opacity-100 transition-opacity">
+        <button onClick={onBack} className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] opacity-40 hover:opacity-100 transition-opacity">
           <LayoutGrid className="w-6 h-6" />
           <span className="text-[10px] font-bold">Juego</span>
         </button>
-        <button className="flex flex-col items-center gap-1 text-ade-accent">
+        <button className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] text-ade-accent">
           <Book className="w-6 h-6" />
           <span className="text-[10px] font-bold">Bitácora</span>
         </button>
@@ -514,7 +514,7 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
             if (onMapa) onMapa();
             else showToast('Mapa. Pronto.');
           }}
-          className="flex flex-col items-center gap-1 opacity-40 hover:opacity-100 transition-opacity"
+          className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] opacity-40 hover:opacity-100 transition-opacity"
         >
           <MapIcon className="w-6 h-6" />
           <span className="text-[10px] font-bold">Mapa</span>
@@ -524,7 +524,7 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
             if (onPerfil) onPerfil();
             else showToast('Perfil. Pronto.');
           }}
-          className="flex flex-col items-center gap-1 opacity-40 hover:opacity-100 transition-opacity"
+          className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] opacity-40 hover:opacity-100 transition-opacity"
         >
           <User className="w-6 h-6" />
           <span className="text-[10px] font-bold">Perfil</span>
