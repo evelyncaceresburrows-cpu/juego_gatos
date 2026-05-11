@@ -6,6 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
     <meta name="theme-color" content="#FBF1D8" />
 
+    <!-- PWA — auditoría §3.8. Manifest + iOS standalone meta tags.
+         "Add to home screen" lo deja como app standalone con icono. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/og-image.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ADE" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
     <!-- ─── Meta básicos ───────────────────────────────────────────── -->
     <title>ADE — el gato que caza ideas</title>
     <meta name="description" content="Un gato que juega contigo 30 segundos para ayudarte a pensar mejor. Captura chispas, fusiona ideas, descubre tu modo creativo." />

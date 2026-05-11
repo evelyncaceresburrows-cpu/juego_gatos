@@ -54,11 +54,14 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
   // las capturas del perfil. Más honesto (alma sec.4 — Bitácora espejo).
   const [radarOcho, setRadarOcho] = useState<number[]>(Array(8).fill(20));
 
-  // Cable a adeProfile: si llegamos terminando partida, computamos la
-  // lectura final una sola vez al montar. Si entramos por la vía manual
-  // (BITÁCORA desde Home), justFinishedScore === 0 y no hay banner.
+  // Cable a adeProfile: si llegamos terminando partida con ideas guardadas,
+  // computamos una frase corta de contexto 'idea' (no 'fin' — eso ya lo
+  // mostró GameOver). Auditoría §3.5: evita repetir la lectura final.
+  // Si entramos manual (BITÁCORA desde Home), justFinishedScore === 0 y
+  // no hay banner. Si no hay ideas guardadas, tampoco: la Bitácora se
+  // ve sola, sin necesidad de un comentario extra.
   const [fraseFin] = useState<string>(() =>
-    justFinishedScore > 0 ? getFraseAde('fin') : ''
+    justFinishedScore > 0 ? getFraseAde('idea') : ''
   );
 
   // Mejora 05 — toast efímero para botones de la nav inferior aún no implementados.
@@ -322,9 +325,9 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
         />
       </div>
 
-      {/* Banner de "lectura final" — solo cuando llega de partida.
-          Frase computada de getFraseAde('fin') al montar. */}
-      {fraseFin && (
+      {/* Banner solo si viene de partida Y guardó al menos 1 idea — auditoría
+          §3.5. Sin ideas no hay comentario; el archivo vacío basta por sí solo. */}
+      {fraseFin && ideas.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}

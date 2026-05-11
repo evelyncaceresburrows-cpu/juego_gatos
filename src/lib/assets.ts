@@ -15,16 +15,21 @@
 //   adeInterpret → lectura final / interpretación (GameOver)
 //   adeArchive   → bitácora / memoria (Journal con ideas)
 //   adeOffended  → vacío / sin actividad (Journal sin ideas)
+//
+// Auditoría §3.9 — PNG → WebP. Los 8 sprites pasaron de 17 MB a 1.3 MB
+// total (92% reducción). Apuntamos a .webp por defecto. Los .png siguen
+// en disco como fallback histórico — todos los browsers modernos
+// (Safari 14+, Chrome 32+, Firefox 65+) soportan WebP nativo.
 
 export const ASSETS = {
-  adeIdle:      '/assets/ade/character/ade-idle.png',
-  adeCurious:   '/assets/ade/character/ade-curious.png',
-  adeScan:      '/assets/ade/character/ade-scan.png',
-  adeHunt:      '/assets/ade/character/ade-hunt.png',
-  adeFuse:      '/assets/ade/character/ade-fuse.png',
-  adeInterpret: '/assets/ade/character/ade-interpret.png',
-  adeArchive:   '/assets/ade/character/ade-archive.png',
-  adeOffended:  '/assets/ade/character/ade-offended.png',
+  adeIdle:      '/assets/ade/character/ade-idle.webp',
+  adeCurious:   '/assets/ade/character/ade-curious.webp',
+  adeScan:      '/assets/ade/character/ade-scan.webp',
+  adeHunt:      '/assets/ade/character/ade-hunt.webp',
+  adeFuse:      '/assets/ade/character/ade-fuse.webp',
+  adeInterpret: '/assets/ade/character/ade-interpret.webp',
+  adeArchive:   '/assets/ade/character/ade-archive.webp',
+  adeOffended:  '/assets/ade/character/ade-offended.webp',
 } as const;
 
 /** Tipo de las 8 URLs canónicas de Ade. */

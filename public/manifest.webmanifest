@@ -1,0 +1,33 @@
+{
+  "name": "ADE — el gato que caza ideas",
+  "short_name": "ADE",
+  "description": "Un gato que juega contigo 30 segundos para ayudarte a pensar mejor.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "es-CL",
+  "background_color": "#FBF1D8",
+  "theme_color": "#FBF1D8",
+  "categories": ["games", "lifestyle", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/ade/character/ade-idle.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

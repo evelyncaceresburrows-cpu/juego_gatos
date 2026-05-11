@@ -21,6 +21,7 @@ import {
 import { getAnimoActual, getHumorProfile } from '../systems/animo';
 import type { MetricasSesion } from '../systems/lectura';
 import * as sound from '../lib/sound';
+import { useReducedMotion } from '../lib/useReducedMotion';
 import FusionRonda from './FusionRonda';
 import IndicadorAcumulacion from './IndicadorAcumulacion';
 
@@ -166,6 +167,11 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
   // PAUSE — auditoría §8.2: el botón Pause era placeholder. Ahora freeza
   // el timer y el spawn. Tap en el overlay reanuda. ESC también reanuda.
   const [isPaused, setIsPaused] = useState(false);
+
+  // prefers-reduced-motion — desactiva el parpadeo del cat en idle y la
+  // burst de partículas decorativa. Lo funcional (HUD pulse, FLOW banner,
+  // anillo, transición de estados) se mantiene.
+  const reducedMotion = useReducedMotion();
 
   // Buffer de las últimas 5 chispas capturadas — alimenta la ronda 2
   // (FusionRonda). Se reinicia tras cada fusión.
@@ -810,11 +816,11 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
               filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.5))',
               objectPosition: 'bottom',
             }}
-            animate={adeState === 'scan'
+            animate={adeState === 'scan' && !reducedMotion
               ? { opacity: [1, 1, 0.82, 1, 1, 1, 1, 0.82, 1, 1] }
               : { opacity: 1 }
             }
-            transition={adeState === 'scan'
+            transition={adeState === 'scan' && !reducedMotion
               ? {
                   // duración del ciclo de parpadeo viene del ánimo de
                   // Ade. filoso/ansioso → más rápido, sereno/atento →
@@ -828,20 +834,32 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
             }
           />
           
-          {/* Burbuja de Ade — entrada tipo pop con leve overshoot, salida
-              suave. Sale desde la cabeza del gato (top-right) hacia arriba.
-              AnimatePresence permite que el exit se anime al desmontar. */}
+          {/* Burbuja de Ade — auditoría §3.6: ahora posicionada sobre el cat
+              (no flotando lejos) con cola SVG que apunta a su cabeza.
+              transformOrigin bottom asegura que el pop animation salga
+              desde el lado correcto. */}
           <AnimatePresence>
             {adePhrase && (
               <motion.div
                 key="ade-phrase-bubble"
-                initial={{ opacity: 0, y: 8, scale: 0.85, transformOrigin: 'bottom left' }}
+                initial={{ opacity: 0, y: 8, scale: 0.85 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.85, y: 4 }}
                 transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-                className="absolute -top-12 -right-24 bg-white text-ade-dark px-4 py-2 rounded-2xl rounded-bl-none text-xs font-bold shadow-xl border border-white/20 max-w-[150px]"
+                style={{ transformOrigin: 'bottom center' }}
+                className="absolute -top-2 left-1/2 -translate-x-1/2 bg-white text-ade-dark px-4 py-2 rounded-2xl text-xs font-bold shadow-xl border border-white/20 max-w-[180px] whitespace-normal text-center"
               >
                 {adePhrase}
+                {/* Cola del bubble — apunta a la cabeza del cat justo debajo. */}
+                <svg
+                  className="absolute left-1/2 -translate-x-1/2 -bottom-2 pointer-events-none"
+                  width="14"
+                  height="9"
+                  viewBox="0 0 14 9"
+                  aria-hidden="true"
+                >
+                  <path d="M0 0 L14 0 L7 9 Z" fill="white" />
+                </svg>
               </motion.div>
             )}
           </AnimatePresence>
@@ -887,21 +905,21 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
               animate={{ opacity: [0.6, 1, 0.6] }}
               transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}
             />
-            {/* Texto FLOW */}
+            {/* Texto FLOW — auditoría §5.3: era 56px y dominaba la pantalla
+                en un juego contemplativo. Bajado a 28px y posicionado arriba
+                para que no compita con sparks/cat. Sigue comunicando el
+                estado de FLOW pero como pista, no como evento dominante. */}
             <motion.span
-              initial={{ scale: 0.7, y: 10 }}
-              animate={{ scale: [1, 1.08, 1], y: 0 }}
-              transition={{
-                scale: { duration: 1.2, repeat: Infinity, ease: 'easeInOut' },
-                y: { duration: 0.4, type: 'spring', damping: 12 },
-              }}
-              className="font-black uppercase select-none"
+              initial={{ scale: 0.8, y: -20 }}
+              animate={{ scale: 1, y: 0 }}
+              transition={{ type: 'spring', damping: 14, stiffness: 200 }}
+              className="font-black uppercase select-none absolute top-32"
               style={{
                 color: '#FFD600',
-                fontSize: '56px',
-                letterSpacing: '0.4em',
+                fontSize: '28px',
+                letterSpacing: '0.5em',
                 textShadow:
-                  '0 0 30px rgba(255, 214, 0, 0.9), 0 0 60px rgba(255, 214, 0, 0.5)',
+                  '0 0 16px rgba(255, 214, 0, 0.7), 0 0 32px rgba(255, 214, 0, 0.35)',
               }}
             >
               FLOW

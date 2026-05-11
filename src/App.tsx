@@ -1,12 +1,16 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import Home from './components/Home';
-import Game from './components/Game';
-import Journal from './components/Journal';
-import Perfil from './components/Perfil';
-import Mapa from './components/Mapa';
-import GameOver from './components/GameOver';
-import Ajustes from './components/Ajustes';
-import Onboarding from './components/Onboarding';
+// Auditoría §3.7 — code splitting por pantalla.
+// Home se carga eager (es la primera pantalla). El resto vía React.lazy:
+// cada pantalla queda en su propio chunk que Vite genera al build.
+// Resultado: TTI más bajo, primer render solo trae Home + lo crítico.
+const Game = lazy(() => import('./components/Game'));
+const Journal = lazy(() => import('./components/Journal'));
+const Perfil = lazy(() => import('./components/Perfil'));
+const Mapa = lazy(() => import('./components/Mapa'));
+const GameOver = lazy(() => import('./components/GameOver'));
+const Ajustes = lazy(() => import('./components/Ajustes'));
+const Onboarding = lazy(() => import('./components/Onboarding'));
 import {
   getModoActual,
   setModoActual,
@@ -81,15 +85,24 @@ export default function App() {
     }
   }, [lastScore]);
 
+  // Fallback minimal — fondo crema sólido sin spinner. Los chunks lazy
+  // se descargan en <50ms en local; un flash de spinner agrega ruido
+  // visual. Si la red está mala, el div crema preserva la continuidad.
+  const screenFallback = (
+    <div className="fixed inset-0 bg-ade-beige" aria-hidden="true" />
+  );
+
   return (
     <div className="mx-auto max-w-[430px] w-full min-h-screen-safe bg-ade-beige text-ade-dark overflow-x-hidden font-sans relative">
       {showOnboarding && (
-        <Onboarding
-          onComplete={() => {
-            markOnboardingDone();
-            setShowOnboarding(false);
-          }}
-        />
+        <Suspense fallback={screenFallback}>
+          <Onboarding
+            onComplete={() => {
+              markOnboardingDone();
+              setShowOnboarding(false);
+            }}
+          />
+        </Suspense>
       )}
       {currentScreen === 'home' && (
         <Home
@@ -109,49 +122,51 @@ export default function App() {
           onModoChange={handleModoChange}
         />
       )}
-      {currentScreen === 'ajustes' && (
-        <Ajustes onBack={() => setCurrentScreen('home')} />
-      )}
-      {currentScreen === 'game' && (
-        <Game
-          onEnd={handleGameEnd}
-          modo={modo}
-        />
-      )}
-      {currentScreen === 'journal' && (
-        <Journal
-          onBack={() => setCurrentScreen('home')}
-          onPerfil={() => {
-            setPerfilOrigen('journal');
-            setCurrentScreen('perfil');
-          }}
-          onMapa={() => {
-            setMapaOrigen('journal');
-            setCurrentScreen('mapa');
-          }}
-          justFinishedScore={lastScore}
-        />
-      )}
-      {currentScreen === 'perfil' && (
-        <Perfil onBack={() => setCurrentScreen(perfilOrigen)} />
-      )}
-      {currentScreen === 'mapa' && (
-        <Mapa onBack={() => setCurrentScreen(mapaOrigen)} />
-      )}
-      {currentScreen === 'gameover' && (
-        <GameOver
-          score={lastScore}
-          metricas={lastMetricas}
-          onSave={() => setCurrentScreen('journal')}
-          onAnother={() => setCurrentScreen('game')}
-          onShare={handleShare}
-          onHome={() => {
-            setLastScore(0);
-            setLastMetricas(null);
-            setCurrentScreen('home');
-          }}
-        />
-      )}
+      <Suspense fallback={screenFallback}>
+        {currentScreen === 'ajustes' && (
+          <Ajustes onBack={() => setCurrentScreen('home')} />
+        )}
+        {currentScreen === 'game' && (
+          <Game
+            onEnd={handleGameEnd}
+            modo={modo}
+          />
+        )}
+        {currentScreen === 'journal' && (
+          <Journal
+            onBack={() => setCurrentScreen('home')}
+            onPerfil={() => {
+              setPerfilOrigen('journal');
+              setCurrentScreen('perfil');
+            }}
+            onMapa={() => {
+              setMapaOrigen('journal');
+              setCurrentScreen('mapa');
+            }}
+            justFinishedScore={lastScore}
+          />
+        )}
+        {currentScreen === 'perfil' && (
+          <Perfil onBack={() => setCurrentScreen(perfilOrigen)} />
+        )}
+        {currentScreen === 'mapa' && (
+          <Mapa onBack={() => setCurrentScreen(mapaOrigen)} />
+        )}
+        {currentScreen === 'gameover' && (
+          <GameOver
+            score={lastScore}
+            metricas={lastMetricas}
+            onSave={() => setCurrentScreen('journal')}
+            onAnother={() => setCurrentScreen('game')}
+            onShare={handleShare}
+            onHome={() => {
+              setLastScore(0);
+              setLastMetricas(null);
+              setCurrentScreen('home');
+            }}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

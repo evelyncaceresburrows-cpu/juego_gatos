@@ -99,23 +99,37 @@ function playTone(
   }
 }
 
-/** Pop corto al capturar una chispa. */
-export function capture(): void {
-  playTone(880, 0.08, 'sine', 0.14);
-  // Armónico superior para dar peso
-  playTone(1320, 0.06, 'triangle', 0.06);
+// Haptic helper — vibrate API solo está disponible en mobile. En desktop
+// no hace nada. No requiere user gesture como audio.
+function vibrate(pattern: number | number[]): void {
+  if (typeof navigator === 'undefined') return;
+  if (!('vibrate' in navigator)) return;
+  try {
+    navigator.vibrate(pattern);
+  } catch {
+    /* no-op */
+  }
 }
 
-/** Chime ascendente al cruzar combo 3 (FLOW). */
+/** Pop corto al capturar una chispa. Audio + haptic. */
+export function capture(): void {
+  playTone(880, 0.08, 'sine', 0.14);
+  playTone(1320, 0.06, 'triangle', 0.06);
+  vibrate(15);
+}
+
+/** Chime ascendente al cruzar combo 3 (FLOW). Audio + haptic doble. */
 export function flow(): void {
   playTone(660, 0.12, 'sine', 0.16);
   setTimeout(() => playTone(880, 0.12, 'sine', 0.16), 80);
   setTimeout(() => playTone(1100, 0.18, 'sine', 0.14), 160);
+  vibrate([30, 40, 30]);
 }
 
-/** Bell sostenido al abrir FusionRonda. */
+/** Bell sostenido al abrir FusionRonda. Audio + haptic largo. */
 export function fusion(): void {
   playTone(523, 0.4, 'sine', 0.18);
   playTone(659, 0.35, 'sine', 0.12);
   playTone(783, 0.3, 'sine', 0.08);
+  vibrate(60);
 }

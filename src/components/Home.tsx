@@ -5,6 +5,7 @@ import { ASSETS } from '../lib/assets';
 import { getFraseAde, getPerfilCompleto } from '../systems/adeProfile';
 import { MODOS, MODOS_LIST, type ModoJuegoId } from '../systems/modos';
 import { unlockAudio } from '../lib/sound';
+import { useReducedMotion } from '../lib/useReducedMotion';
 import {
   checkUnlocksNuevos,
   getProximoUnlock,
@@ -47,6 +48,11 @@ const Home: React.FC<HomeProps> = ({
   // sola vez al montar. Si en futuras visitas el perfil cambió, la
   // próxima vez que se monte Home se recalcula.
   const [fraseInicio] = useState<string>(() => getFraseAde('inicio'));
+  // Auditoría §12: respeta prefers-reduced-motion del sistema + el toggle
+  // de Ajustes. Si true, desactivamos animaciones decorativas (yawn,
+  // blink, look-around, halo pulse). Las animaciones funcionales — tap
+  // del cat, CTA — siguen activas porque comunican estado.
+  const reducedMotion = useReducedMotion();
 
   // Pose de Ade en Home. Default 'idle' (reposo). Cuando el usuario tapea
   // al cat, pasa a 'curious' por ~1.5s y vuelve. Es el momento de
@@ -141,8 +147,8 @@ const Home: React.FC<HomeProps> = ({
               background: '#F5C400',
               boxShadow: '0 0 8px rgba(245, 196, 0, 0.6)',
             }}
-            animate={{ opacity: [0.2, 0.8, 0.2], scale: [0.8, 1.2, 0.8] }}
-            transition={{
+            animate={reducedMotion ? undefined : { opacity: [0.2, 0.8, 0.2], scale: [0.8, 1.2, 0.8] }}
+            transition={reducedMotion ? undefined : {
               duration: 3 + i * 0.4,
               repeat: Infinity,
               delay: dot.delay,
@@ -237,8 +243,8 @@ const Home: React.FC<HomeProps> = ({
         className="relative z-10 w-full max-w-md"
       >
         <motion.div
-          animate={{ y: [0, -18, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+          animate={reducedMotion ? undefined : { y: [0, -18, 0] }}
+          transition={reducedMotion ? undefined : { duration: 5, repeat: Infinity, ease: 'easeInOut' }}
           className="relative"
         >
           {/* Halo dorado base (fixed) */}
@@ -276,8 +282,8 @@ const Home: React.FC<HomeProps> = ({
               filter: 'blur(40px)',
               zIndex: 0,
             }}
-            animate={{ opacity: [0.6, 1, 0.6], scale: [0.95, 1.05, 0.95] }}
-            transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
+            animate={reducedMotion ? undefined : { opacity: [0.6, 1, 0.6], scale: [0.95, 1.05, 0.95] }}
+            transition={reducedMotion ? undefined : { duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
           />
 
           {/* Sombra de piso debajo del gato — más rica */}
@@ -309,8 +315,8 @@ const Home: React.FC<HomeProps> = ({
           <motion.div
             className="relative z-10"
             style={{ transformOrigin: '50% 100%' }}
-            animate={{ scaleY: [1, 1, 1.045, 1, 1] }}
-            transition={{
+            animate={reducedMotion ? undefined : { scaleY: [1, 1, 1.045, 1, 1] }}
+            transition={reducedMotion ? undefined : {
               duration: 13,
               repeat: Infinity,
               ease: 'easeInOut',
@@ -319,8 +325,8 @@ const Home: React.FC<HomeProps> = ({
           >
             <motion.div
               style={{ transformOrigin: '50% 100%' }}
-              animate={{ rotate: [0, 0, -1.5, 0, 1.5, 0, 0] }}
-              transition={{
+              animate={reducedMotion ? undefined : { rotate: [0, 0, -1.5, 0, 1.5, 0, 0] }}
+              transition={reducedMotion ? undefined : {
                 duration: 10,
                 repeat: Infinity,
                 ease: 'easeInOut',
@@ -336,10 +342,10 @@ const Home: React.FC<HomeProps> = ({
                   filter:
                     'drop-shadow(0 16px 24px rgba(0, 0, 0, 0.12)) drop-shadow(0 4px 8px rgba(245, 196, 0, 0.18))',
                 }}
-                animate={{
+                animate={reducedMotion ? undefined : {
                   opacity: [1, 1, 0.78, 1, 1, 1, 1, 0.78, 1, 1],
                 }}
-                transition={{
+                transition={reducedMotion ? undefined : {
                   duration: 6.5,
                   repeat: Infinity,
                   ease: 'easeInOut',
@@ -449,21 +455,28 @@ const Home: React.FC<HomeProps> = ({
           </div>
         )}
 
-        {/* ── Modo selector — Fase 3.1.
-            Pill row de 5 modos. El activo se rellena en dorado, los demás
-            quedan con borde sutil. Tagline del modo activo abajo, biblia tone.
-            Solo se muestra si Home recibió onModoChange (compat). */}
+        {/* ── Modo selector — Fase 3.1 + auditoría §3.4 (carousel + touch ≥44).
+            Carousel horizontal con snap. El activo se rellena en dorado, los
+            demás quedan con borde sutil. Tagline del modo activo abajo como
+            microcopy (biblia tone — "Pivot. Insight. Churn."). Touch target
+            ≥ 44×44 WCAG. Solo se muestra si Home recibió onModoChange (compat). */}
         {onModoChange && (
           <div className="w-full flex flex-col items-center gap-2 mb-1">
-            <div className="flex items-center justify-center gap-1.5 flex-wrap">
+            <div
+              className="w-full flex items-center gap-2 overflow-x-auto snap-x snap-mandatory px-4 -mx-4 py-1 hide-scrollbar"
+            >
               {MODOS_LIST.map(m => {
                 const activo = m.id === modo;
                 return (
                   <button
                     key={m.id}
                     onClick={() => onModoChange(m.id)}
-                    className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.18em] transition-all active:scale-95"
+                    aria-label={`Modo ${m.label}: ${MODOS[m.id].tagline}`}
+                    aria-pressed={activo}
+                    className="snap-start shrink-0 px-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 flex items-center justify-center"
                     style={{
+                      minHeight: '44px',
+                      minWidth: '64px',
                       background: activo
                         ? 'linear-gradient(180deg, #FFE042 0%, #FFD600 100%)'
                         : 'rgba(255, 255, 255, 0.55)',
@@ -481,13 +494,18 @@ const Home: React.FC<HomeProps> = ({
                 );
               })}
             </div>
-            {/* Tagline del modo activo. Italic, biblia tone. */}
-            <p
-              className="text-[10px] italic text-ade-dark/55 text-center"
+            {/* Microcopy — tagline del modo activo. Italic, biblia tone.
+                Es la "tooltip al tap": al cambiar de modo el tagline cambia. */}
+            <motion.p
+              key={modo}
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+              className="text-[11px] italic text-ade-dark/60 text-center"
               style={{ minHeight: '1em' }}
             >
               {MODOS[modo].tagline}
-            </p>
+            </motion.p>
           </div>
         )}
 
@@ -538,7 +556,7 @@ const Home: React.FC<HomeProps> = ({
             whileHover={{ scale: 1.03, y: -1 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-            className="flex-1 py-3 text-ade-dark font-black tracking-widest text-[11px] uppercase rounded-2xl flex items-center justify-center gap-1.5"
+            className="flex-1 py-3 min-h-[44px] text-ade-dark font-black tracking-widest text-[11px] uppercase rounded-2xl flex items-center justify-center gap-1.5"
             style={{
               background: 'rgba(255, 255, 255, 0.6)',
               backdropFilter: 'blur(10px)',
@@ -556,7 +574,7 @@ const Home: React.FC<HomeProps> = ({
             whileHover={{ scale: 1.03, y: -1 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-            className="flex-1 py-3 text-ade-dark font-black tracking-widest text-[11px] uppercase rounded-2xl flex items-center justify-center gap-1.5"
+            className="flex-1 py-3 min-h-[44px] text-ade-dark font-black tracking-widest text-[11px] uppercase rounded-2xl flex items-center justify-center gap-1.5"
             style={{
               background: 'rgba(255, 255, 255, 0.6)',
               backdropFilter: 'blur(10px)',
@@ -640,7 +658,7 @@ const Home: React.FC<HomeProps> = ({
               </p>
               <button
                 onClick={cerrarCelebracion}
-                className="mt-2 w-full py-3 rounded-full font-black uppercase tracking-wider text-[12px] transition-all active:scale-95"
+                className="mt-2 w-full py-3 min-h-[44px] rounded-full font-black uppercase tracking-wider text-[12px] transition-all active:scale-95"
                 style={{
                   background:
                     'linear-gradient(180deg, #FFE042 0%, #FFD600 50%, #F5C600 100%)',

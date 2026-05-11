@@ -29,6 +29,14 @@ export interface UnlockDef {
 
 export const UNLOCKS: UnlockDef[] = [
   {
+    // Auditoría §3.6 — primer reconocimiento. Llegaste, jugaste. Ade lo
+    // anota. Sin felicitación: solo registro.
+    diaRequerido: 1,
+    id: 'primer_dia',
+    nombre: 'Primera cacería',
+    descripcion: 'Día uno. Llegaste.',
+  },
+  {
     diaRequerido: 3,
     id: 'frases_extra',
     nombre: 'Más voz de Ade',
