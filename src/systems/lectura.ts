@@ -169,9 +169,19 @@ function leerAccion(m: MetricasSesion): Observacion {
     return { dimension: 'accion', frase: 'Vino y se fue. Sin acto.' };
   }
   if (m.guardadas === 0 && total > 0) {
+    // Pluralización condicional (auditoría §7.2: "1 chispas" era bug).
+    // Para primera sesión, suavizar el "Pena." a algo más invitante.
+    const palabraChispa = total === 1 ? 'chispa' : 'chispas';
+    const esPrimeraSesion = perfil.sesiones <= 1;
+    if (esPrimeraSesion) {
+      return {
+        dimension: 'accion',
+        frase: `${total} ${palabraChispa}. Ninguna guardada. Probemos otra.`,
+      };
+    }
     return {
       dimension: 'accion',
-      frase: `${total} chispas. Cero guardadas. Pena.`,
+      frase: `${total} ${palabraChispa}. Cero guardadas. Pena.`,
     };
   }
   if (m.saltadasFusion > 0 && m.guardadas === 0) {
@@ -181,9 +191,10 @@ function leerAccion(m: MetricasSesion): Observacion {
     return { dimension: 'accion', frase: 'Una idea afuera. Suficiente.' };
   }
   if (m.guardadas >= 2) {
+    const palabraIdea = m.guardadas === 1 ? 'idea' : 'ideas';
     return {
       dimension: 'accion',
-      frase: `${m.guardadas} ideas. Productivo.`,
+      frase: `${m.guardadas} ${palabraIdea}. Productivo.`,
     };
   }
   // m.guardadas === 0 ya fue cubierto arriba. Aquí solo cae si el

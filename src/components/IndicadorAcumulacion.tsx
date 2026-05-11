@@ -58,15 +58,36 @@ const IndicadorAcumulacion: React.FC<Props> = ({ path }) => {
         transform: 'rotate(-90deg)',
       }}
     >
-      {/* Anillo base — siempre visible muy tenue, ancla visual del recorrido. */}
+      {/* Anillo base — visible sobre el fondo nocturno. Subido de 0.06 a
+          0.22 (auditoría de game design §3.4: el indicador era invisible).
+          Ahora el usuario ve el "espacio" donde irán los arcos antes de
+          capturar la primera chispa. */}
       <circle
         r={radius}
         cx={0}
         cy={0}
         fill="none"
-        stroke="rgba(255, 214, 0, 0.06)"
-        strokeWidth={2}
+        stroke="rgba(255, 214, 0, 0.22)"
+        strokeWidth={2.5}
       />
+
+      {/* 5 tick marks divisorios — pequeños puntos en las 5 separaciones
+          de los arcos. Comunican "este anillo tiene 5 espacios" antes de
+          que ningún arco se haya encendido. */}
+      {Array.from({ length: TOTAL_ARCOS }).map((_, i) => {
+        const angle = (i / TOTAL_ARCOS) * 2 * Math.PI;
+        const tx = Math.cos(angle) * radius;
+        const ty = Math.sin(angle) * radius;
+        return (
+          <circle
+            key={`tick-${i}`}
+            cx={tx}
+            cy={ty}
+            r={2.5}
+            fill="rgba(255, 214, 0, 0.5)"
+          />
+        );
+      })}
 
       {/* 5 arcos. Cada uno se posiciona con strokeDashoffset y solo se
           enciende cuando i < path. */}

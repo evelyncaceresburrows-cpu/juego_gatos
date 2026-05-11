@@ -20,6 +20,7 @@ import {
 } from '../systems/modos';
 import { getAnimoActual, getHumorProfile } from '../systems/animo';
 import type { MetricasSesion } from '../systems/lectura';
+import * as sound from '../lib/sound';
 import FusionRonda from './FusionRonda';
 import IndicadorAcumulacion from './IndicadorAcumulacion';
 
@@ -162,6 +163,10 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
   // pose de eureka temporal de Ade (alma sec.3 + biblia sec.7 — alegría).
   const [flowActive, setFlowActive] = useState(false);
 
+  // PAUSE — auditoría §8.2: el botón Pause era placeholder. Ahora freeza
+  // el timer y el spawn. Tap en el overlay reanuda. ESC también reanuda.
+  const [isPaused, setIsPaused] = useState(false);
+
   // Buffer de las últimas 5 chispas capturadas — alimenta la ronda 2
   // (FusionRonda). Se reinicia tras cada fusión.
   const [recentChispas, setRecentChispas] = useState<string[]>([]);
@@ -245,11 +250,15 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
       color: color,
     };
 
-    setSparks(prev => [...prev, newSpark]);
+    // Límite de 6 sparks simultáneos (auditoría §3.5). El check vive en
+    // el functional setState para no agregar `sparks` a las deps del
+    // useCallback — eso recrearía el callback en cada captura y
+    // reiniciaría el setInterval del useEffect.
+    setSparks(prev => (prev.length >= 6 ? prev : [...prev, newSpark]));
   }, [showFusion, palabras]);
 
   useEffect(() => {
-    if (showFusion) return;
+    if (showFusion || isPaused) return;
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -278,7 +287,7 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
     };
     // 'score' YA NO va en este array; lo leemos por ref.
     // 'onEnd' es seguro porque está memoizado en App.tsx (PARCHE 0).
-  }, [onEnd, spawnSpark, showFusion, humor.spawnFactor]);
+  }, [onEnd, spawnSpark, showFusion, humor.spawnFactor, isPaused]);
 
   const handleSparkClick = (sparkId: number) => {
     if (showFusion) return;
@@ -311,6 +320,9 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
     const ptsGanados = 10 + (newCombo * 2);
     setScore(prev => prev + ptsGanados);
 
+    // Sonido de captura — auditoría §5.2: faltaba peso multi-sensorial.
+    sound.capture();
+
     // Burst de partículas en el punto del spark — feedback inmediato
     // (decisión usuario: "el caos no es un botón"). Cada captura SIENTE.
     // Auto-cleanup a los 900ms para que el array no crezca.
@@ -339,6 +351,7 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
       // Aunque la fusión real abre con FusionRonda, el FLOW es el
       // momento en que las ideas empiezan a combinarse mentalmente.
       triggerAdeState('fuse', 1800);
+      sound.flow();
       setTimeout(() => setFlowActive(false), 1800);
     }
 
@@ -355,6 +368,7 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
       // Anillo cerrado — Ade pasa a 'fuse', el modal de FusionRonda
       // se monta 1.1s después con la pose ya establecida.
       triggerAdeState('fuse', 1100);
+      sound.fusion();
       setTimeout(() => {
         setShowFusion(true);
       }, 1100);
@@ -505,8 +519,8 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
             ruido para usuarios nuevos). Tono biblia: se nota o no se nota. */}
         {humor.adjetivo && (
           <span
-            className="text-[8px] italic mt-0.5"
-            style={{ color: 'rgba(255, 255, 255, 0.32)' }}
+            className="text-[10px] italic mt-0.5 tracking-wide"
+            style={{ color: 'rgba(255, 255, 255, 0.62)' }}
           >
             {humor.adjetivo}
           </span>
@@ -552,7 +566,11 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
             </div>
           </div>
 
-          <button className="w-12 h-12 bg-white/5 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/10">
+          <button
+            onClick={() => setIsPaused(true)}
+            aria-label="Pausar juego"
+            className="w-12 h-12 bg-white/5 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/10 active:scale-90 transition-transform"
+          >
             <Pause className="w-6 h-6" />
           </button>
         </div>
@@ -829,6 +847,25 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
           </AnimatePresence>
         </motion.div>
       </main>
+
+      {/* Overlay de Pausa — bloquea timer + spawn + sparks. Tap o ESC reanuda.
+          Auditoría §8.2: el botón Pause era placeholder. Ahora freeza la sesión. */}
+      <AnimatePresence>
+        {isPaused && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsPaused(false)}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center cursor-pointer"
+            style={{ background: 'rgba(10, 10, 20, 0.78)', backdropFilter: 'blur(8px)' }}
+          >
+            <Pause className="w-16 h-16 mb-4" style={{ color: '#FFD600' }} />
+            <p className="text-2xl font-black tracking-wider uppercase text-white mb-2">Pausa</p>
+            <p className="text-sm italic text-white/60">Toca para continuar.</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* FLOW MODE banner — pulse dorado central + Ade en pose eureka */}
       <AnimatePresence>

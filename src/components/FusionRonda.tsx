@@ -19,7 +19,11 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Bookmark } from 'lucide-react';
 import type { TipoChispa } from '../systems/adeProfile';
-import { getFusion, esTipoCanonico, type FusionContext } from '../systems/fusiones';
+import {
+  getFusionWithModifier,
+  esTipoCanonico,
+  type FusionContext,
+} from '../systems/fusiones';
 import { ASSETS } from '../lib/assets';
 
 interface FusionRondaProps {
@@ -69,9 +73,13 @@ const FusionRonda: React.FC<FusionRondaProps> = ({ chispas, onSave, onClose, con
   const modoA = dosSeleccionadas ? chispasNorm[seleccion[0]] : null;
   const modoB = dosSeleccionadas ? chispasNorm[seleccion[1]] : null;
   // Paso 5/6 — pasamos el contexto al getFusion. Si el padre no lo
-  // mandó, getFusion devuelve la frase pura de la matriz canónica.
-  const insight =
-    dosSeleccionadas && modoA && modoB ? getFusion(modoA, modoB, context) : '';
+  // mandó, devuelve frase pura sin modificador. Auditoría §4.3: ahora
+  // exponemos también el modificador para hacerlo explícito en UI.
+  const fusionResult =
+    dosSeleccionadas && modoA && modoB
+      ? getFusionWithModifier(modoA, modoB, context)
+      : { frase: '', modificador: null };
+  const insight = fusionResult.frase;
 
   const toggleSeleccion = (idx: number) => {
     if (dosSeleccionadas) return; // bloquea más selecciones
@@ -137,7 +145,7 @@ const FusionRonda: React.FC<FusionRondaProps> = ({ chispas, onSave, onClose, con
         <img
           src={ASSETS.adeFuse}
           alt="Ade fusionando"
-          className="w-28 md:w-36 max-w-full opacity-95"
+          className="w-40 md:w-48 max-w-full opacity-95"
         />
       </div>
 
@@ -252,6 +260,21 @@ const FusionRonda: React.FC<FusionRondaProps> = ({ chispas, onSave, onClose, con
               >
                 {insight}
               </motion.p>
+
+              {/* Modificador visible — auditoría §4.3: si el insight se
+                  tiñó por contexto (velocidad/modo/racha), lo decimos.
+                  Sin esto, el sistema de modulación es invisible. */}
+              {fusionResult.modificador && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.55, duration: 0.4 }}
+                  className="text-[10px] font-black tracking-[0.3em] uppercase text-center mt-1"
+                  style={{ color: 'rgba(255, 214, 0, 0.5)' }}
+                >
+                  ↳ {fusionResult.modificador}
+                </motion.p>
+              )}
 
               {/* Textarea para que el usuario añada su idea */}
               <motion.div

@@ -156,7 +156,7 @@ const GameOver: React.FC<GameOverProps> = ({
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 0.95 }}
           transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
-          className="w-28 md:w-36 max-w-full pointer-events-none"
+          className="w-40 md:w-48 max-w-full pointer-events-none"
         />
 
         {/* La lectura. 3 observaciones estructuradas, una por dimensión. */}

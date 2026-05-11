@@ -114,6 +114,25 @@ export function getFusion(
   b: TipoChispa,
   ctx?: FusionContext
 ): string {
+  return getFusionWithModifier(a, b, ctx).frase;
+}
+
+/**
+ * Variante extendida — devuelve frase + etiqueta del modificador que
+ * se aplicó (o null si no se modificó). Auditoría §4.3: el usuario no
+ * sabía por qué la frase cambiaba; ahora FusionRonda puede mostrar
+ * "↳ Velocidad alta" para hacer explícita la sofisticación.
+ */
+export interface FusionResult {
+  frase: string;
+  modificador: string | null;
+}
+
+export function getFusionWithModifier(
+  a: TipoChispa,
+  b: TipoChispa,
+  ctx?: FusionContext
+): FusionResult {
   // 1. Resolver el insight base de la matriz canónica.
   let base: string;
   if (a === b) {
@@ -123,31 +142,36 @@ export function getFusion(
     base = FUSIONES_PREMIUM[key] ?? `${a.toUpperCase()} + ${b.toUpperCase()}. Algo dice.`;
   }
 
-  // 2. Sin contexto → frase pura. Mantiene retrocompatibilidad con
-  // cualquier caller existente que no haya migrado a la nueva firma.
-  if (!ctx) return base;
+  // 2. Sin contexto → frase pura.
+  if (!ctx) return { frase: base, modificador: null };
 
   // 3. Modulación lineal — un solo prefijo o sufijo, no compuesto.
-  // Prioridad: velocidad > modo > racha. La primera condición que
-  // matchea decide la modulación final.
+  // Prioridad: velocidad > modo > racha.
   if (ctx.velocidadPromedio > 0 && ctx.velocidadPromedio < 700) {
-    // Capturó por reflejo, no pensó. La fusión llega antes que la idea.
-    return `Demasiado rápido para entenderlo. ${base}`;
+    return {
+      frase: `Demasiado rápido para entenderlo. ${base}`,
+      modificador: 'Velocidad alta',
+    };
   }
   if (ctx.modo === 'ansiedad') {
-    // Modo Ansiedad invita a sostener lo que apareció, no a ejecutar.
-    return `${base} Respira con eso.`;
+    return {
+      frase: `${base} Respira con eso.`,
+      modificador: 'Modo Ansiedad',
+    };
   }
   if (ctx.modo === 'decisiones' && a !== b) {
-    // Modo Decisiones lee toda fusión como dilema. Solo aplica cuando
-    // hay dos opciones distintas (auto-fusión no tiene "cuál").
-    return `${base} Decide cuál.`;
+    return {
+      frase: `${base} Decide cuál.`,
+      modificador: 'Modo Decisiones',
+    };
   }
   if (ctx.racha >= 14) {
-    // Tras dos semanas, Ade reconoce que el jugador ya vio este patrón.
-    return `${base} Otra vez.`;
+    return {
+      frase: `${base} Otra vez.`,
+      modificador: 'Racha de dos semanas',
+    };
   }
-  return base;
+  return { frase: base, modificador: null };
 }
 
 /**

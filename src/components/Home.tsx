@@ -4,6 +4,7 @@ import { Play, Sparkles, Crown, Book, Settings, Flame, X } from 'lucide-react';
 import { ASSETS } from '../lib/assets';
 import { getFraseAde, getPerfilCompleto } from '../systems/adeProfile';
 import { MODOS, MODOS_LIST, type ModoJuegoId } from '../systems/modos';
+import { unlockAudio } from '../lib/sound';
 import {
   checkUnlocksNuevos,
   getProximoUnlock,
@@ -17,6 +18,8 @@ interface HomeProps {
   onJournal: () => void;
   // Acceso directo a la pantalla Perfil desde el botón de corona.
   onPerfil?: () => void;
+  // Acceso a la pantalla de Ajustes (toggle sonido, motion, reset perfil).
+  onAjustes?: () => void;
   // Fase 3.1 — modo activo + handler para cambiarlo. Si no se pasan,
   // Home se renderiza sin selector (compat con callers viejos).
   modo?: ModoJuegoId;
@@ -27,6 +30,7 @@ const Home: React.FC<HomeProps> = ({
   onStart,
   onJournal,
   onPerfil,
+  onAjustes,
   modo = 'creatividad',
   onModoChange,
 }) => {
@@ -221,11 +225,15 @@ const Home: React.FC<HomeProps> = ({
         </p>
       </motion.div>
 
-      {/* ── Cat sprite con halo doble + glow pulse ── */}
+      {/* ── Cat sprite con halo doble + glow pulse ──
+          Auditoría §3.1: NO usar `initial.opacity: 0` aquí — durante los
+          primeros ~700ms el cat era invisible y el usuario veía la
+          pantalla "sin protagonista". Ahora arranca visible y solo
+          escala desde 0.95 a 1 para mantener la sensación de entrada. */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.85 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.15, type: 'spring', damping: 14, stiffness: 110 }}
+        initial={{ scale: 0.95 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.05, type: 'spring', damping: 14, stiffness: 140 }}
         className="relative z-10 w-full max-w-md"
       >
         <motion.div
@@ -489,7 +497,7 @@ const Home: React.FC<HomeProps> = ({
             Hover: scale + brightness + glow más intenso.
             Tap: simula un press físico (translateY + scale + shadow reduce). */}
         <motion.button
-          onClick={onStart}
+          onClick={() => { unlockAudio(); onStart(); }}
           whileHover={{ scale: 1.03, y: -1 }}
           whileTap={{ scale: 0.97, y: 2 }}
           transition={{ type: 'spring', stiffness: 400, damping: 17 }}
@@ -544,7 +552,7 @@ const Home: React.FC<HomeProps> = ({
           </motion.button>
 
           <motion.button
-            onClick={() => showToast('Ajustes. Pronto.')}
+            onClick={() => (onAjustes ? onAjustes() : showToast('Ajustes. Pronto.'))}
             whileHover={{ scale: 1.03, y: -1 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 400, damping: 18 }}

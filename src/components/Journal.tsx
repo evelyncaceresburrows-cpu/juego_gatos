@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Book, LayoutGrid, Map as MapIcon, User, Sparkles, ChevronRight, Download, Printer } from 'lucide-react';
 import { ASSETS } from '../lib/assets';
 import { getIdeas, downloadFile } from '../lib/storage';
-import type { Idea, RadarStats } from '../lib/storage';
+import type { Idea } from '../lib/storage';
 import {
   getFraseAde,
   getPerfilCompleto,
@@ -48,7 +48,11 @@ interface JournalProps {
 const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishedScore = 0 }) => {
   const [filter, setFilter] = useState<'recientes' | 'mejores' | 'locas' | 'útiles'>('recientes');
   const [ideas, setIdeas] = useState<Idea[]>([]);
-  const [radarStats, setRadarStats] = useState<RadarStats>({ vuelo: 20, salto: 20, mirada: 20, eco: 20, pulso: 20 });
+  // Auditoría §5.1 + §8.5: el radar usaba 5 ejes legacy (vuelo/salto/...)
+  // que no matcheaban los 8 modos canónicos. Refactor: ahora cada eje
+  // ES un modo canónico, sin abstracción intermedia. El radar lee directo
+  // las capturas del perfil. Más honesto (alma sec.4 — Bitácora espejo).
+  const [radarOcho, setRadarOcho] = useState<number[]>(Array(8).fill(20));
 
   // Cable a adeProfile: si llegamos terminando partida, computamos la
   // lectura final una sola vez al montar. Si entramos por la vía manual
@@ -242,33 +246,34 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
   useEffect(() => {
     setIdeas(getIdeas());
 
-    // Radar alimentado por el perfil real de adeProfile.ts (alma sec.4 —
-    // Bitácora como espejo mental). Cada eje agrega los modos cuyo
-    // significado le corresponde:
-    //   VUELO  ← BRILLO            (originalidad / chispa creativa)
-    //   SALTO  ← CAOS + ERROR      (disrupción + giro inesperado)
-    //   MIRADA ← SECRETO + DESEO   (profundidad + intuición)
-    //   ECO    ← ECO               (resonancia / impacto)
-    //   PULSO  ← RITUAL + RUIDO    (constancia + distracción productiva)
-    // Cada captura aporta 10 puntos al eje correspondiente, capeado en 100.
+    // Radar octogonal — uno por cada TipoChispa canónico. Cada captura
+    // aporta 10 puntos al eje del modo correspondiente, capeado en 100.
+    // Auditoría §5.1: el espejo ahora refleja directamente el perfil,
+    // sin abstracción intermedia.
     const perfil = getPerfilCompleto();
     const c = perfil.capturas;
-    setRadarStats({
-      vuelo: Math.min(100, c.brillo * 10),
-      salto: Math.min(100, (c.caos + c.error) * 10),
-      mirada: Math.min(100, (c.secreto + c.deseo) * 10),
-      eco: Math.min(100, c.eco * 10),
-      pulso: Math.min(100, (c.ritual + c.ruido) * 10),
-    });
+    setRadarOcho([
+      Math.min(100, c.caos * 10),
+      Math.min(100, c.eco * 10),
+      Math.min(100, c.deseo * 10),
+      Math.min(100, c.ritual * 10),
+      Math.min(100, c.brillo * 10),
+      Math.min(100, c.ruido * 10),
+      Math.min(100, c.secreto * 10),
+      Math.min(100, c.error * 10),
+    ]);
   }, []);
 
-  // Radar data
+  // Radar data — 8 ejes canónicos en orden visual coherente.
   const stats = [
-    { label: 'VUELO', value: radarStats.vuelo },
-    { label: 'SALTO', value: radarStats.salto },
-    { label: 'MIRADA', value: radarStats.mirada },
-    { label: 'ECO', value: radarStats.eco },
-    { label: 'PULSO', value: radarStats.pulso },
+    { label: 'CAOS',    value: radarOcho[0] },
+    { label: 'ECO',     value: radarOcho[1] },
+    { label: 'DESEO',   value: radarOcho[2] },
+    { label: 'RITUAL',  value: radarOcho[3] },
+    { label: 'BRILLO',  value: radarOcho[4] },
+    { label: 'RUIDO',   value: radarOcho[5] },
+    { label: 'SECRETO', value: radarOcho[6] },
+    { label: 'ERROR',   value: radarOcho[7] },
   ];
 
   // SVG Radar generator
@@ -313,7 +318,7 @@ const Journal: React.FC<JournalProps> = ({ onBack, onPerfil, onMapa, justFinishe
         <img
           src={ideas.length > 0 ? ASSETS.adeArchive : ASSETS.adeOffended}
           alt={ideas.length > 0 ? 'Ade archive' : 'Ade sin actividad'}
-          className="w-28 md:w-36 opacity-90"
+          className="w-40 md:w-48 opacity-90"
         />
       </div>
 
