@@ -19,12 +19,13 @@ import { setReducedMotionOverride, useReducedMotion } from '../lib/useReducedMot
 
 interface AjustesProps {
   onBack: () => void;
+  onManual?: () => void;
 }
 
 const VERSION = '0.4.1';
 const REPO_URL = 'https://github.com/evelyncaceresburrows-cpu/juego_gatos';
 
-const Ajustes: React.FC<AjustesProps> = ({ onBack }) => {
+const Ajustes: React.FC<AjustesProps> = ({ onBack, onManual }) => {
   const [muted, setMutedState] = useState<boolean>(() => isMuted());
   const reducedMotion = useReducedMotion();
   const [confirmReset, setConfirmReset] = useState(false);
@@ -111,6 +112,32 @@ const Ajustes: React.FC<AjustesProps> = ({ onBack }) => {
       </header>
 
       <div className="flex-1 px-6 flex flex-col gap-4">
+        {/* MANUAL — atajo a "¿Cómo se juega?". Solo si el caller lo cableó. */}
+        {onManual && (
+          <button
+            onClick={onManual}
+            className="flex items-center gap-4 p-4 rounded-2xl transition-all active:scale-[0.99]"
+            style={{
+              background: 'rgba(255, 214, 0, 0.10)',
+              border: '1px solid rgba(255, 214, 0, 0.30)',
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgba(255, 214, 0, 0.25)' }}
+            >
+              <span className="text-lg font-black" style={{ color: '#8A6A00' }}>?</span>
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-black uppercase tracking-wide">¿Cómo se juega?</p>
+              <p className="text-[11px] italic text-ade-dark/55 mt-0.5">
+                Manual completo de ADE
+              </p>
+            </div>
+            <ChevronLeft className="w-5 h-5 text-ade-dark/30 rotate-180" />
+          </button>
+        )}
+
         {/* SONIDO */}
         <button
           onClick={toggleMuted}

@@ -11,6 +11,7 @@ const Mapa = lazy(() => import('./components/Mapa'));
 const GameOver = lazy(() => import('./components/GameOver'));
 const Ajustes = lazy(() => import('./components/Ajustes'));
 const Onboarding = lazy(() => import('./components/Onboarding'));
+const Manual = lazy(() => import('./components/Manual'));
 import {
   getModoActual,
   setModoActual,
@@ -18,7 +19,7 @@ import {
 } from './systems/modos';
 import type { MetricasSesion } from './systems/lectura';
 
-type Screen = 'home' | 'game' | 'journal' | 'perfil' | 'mapa' | 'gameover' | 'ajustes';
+type Screen = 'home' | 'game' | 'journal' | 'perfil' | 'mapa' | 'gameover' | 'ajustes' | 'manual';
 
 const ONBOARDING_KEY = 'ade_onboarding_done';
 
@@ -118,13 +119,20 @@ export default function App() {
             setCurrentScreen('perfil');
           }}
           onAjustes={() => setCurrentScreen('ajustes')}
+          onManual={() => setCurrentScreen('manual')}
           modo={modo}
           onModoChange={handleModoChange}
         />
       )}
       <Suspense fallback={screenFallback}>
         {currentScreen === 'ajustes' && (
-          <Ajustes onBack={() => setCurrentScreen('home')} />
+          <Ajustes
+            onBack={() => setCurrentScreen('home')}
+            onManual={() => setCurrentScreen('manual')}
+          />
+        )}
+        {currentScreen === 'manual' && (
+          <Manual onBack={() => setCurrentScreen('home')} />
         )}
         {currentScreen === 'game' && (
           <Game

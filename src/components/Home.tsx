@@ -22,6 +22,9 @@ interface HomeProps {
   onPerfil?: () => void;
   // Acceso a la pantalla de Ajustes (toggle sonido, motion, reset perfil).
   onAjustes?: () => void;
+  // Acceso al manual / "¿cómo se juega?". Feedback de usuario con TDAH
+  // pedía explicación de uso explícita y discoverable.
+  onManual?: () => void;
   // Fase 3.1 — modo activo + handler para cambiarlo. Si no se pasan,
   // Home se renderiza sin selector (compat con callers viejos).
   modo?: ModoJuegoId;
@@ -33,6 +36,7 @@ const Home: React.FC<HomeProps> = ({
   onJournal,
   onPerfil,
   onAjustes,
+  onManual,
   modo = 'creatividad',
   onModoChange,
 }) => {
@@ -187,6 +191,32 @@ const Home: React.FC<HomeProps> = ({
           }}
         >
           <Crown className="w-5 h-5" style={{ color: '#F5C400', fill: '#FFD600' }} />
+        </motion.button>
+      )}
+
+      {/* Botón "?" — manual / cómo se juega. Discoverable para usuarios
+          nuevos (especialmente TDAH) sin saturar la pantalla. */}
+      {onManual && (
+        <motion.button
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.92 }}
+          onClick={onManual}
+          aria-label="¿Cómo se juega? Manual"
+          className="absolute z-30 flex items-center justify-center"
+          style={{
+            top: '20px',
+            left: '20px',
+            width: '42px',
+            height: '42px',
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.6)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(26, 35, 50, 0.1)',
+            boxShadow:
+              '0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 4px 12px rgba(0, 0, 0, 0.06)',
+          }}
+        >
+          <span className="text-lg font-black text-ade-dark/65">?</span>
         </motion.button>
       )}
 
@@ -459,16 +489,17 @@ const Home: React.FC<HomeProps> = ({
           </div>
         )}
 
-        {/* ── Modo selector — Fase 3.1 + auditoría §3.4 (carousel + touch ≥44).
-            Carousel horizontal con snap. El activo se rellena en dorado, los
-            demás quedan con borde sutil. Tagline del modo activo abajo como
-            microcopy (biblia tone — "Pivot. Insight. Churn."). Touch target
-            ≥ 44×44 WCAG. Solo se muestra si Home recibió onModoChange (compat). */}
+        {/* ── Modo selector — Fix de "cortado": vuelve a flex-wrap.
+            El carousel cortaba pills en mobile y daba sensación de bug
+            (feedback del usuario). 2 filas (3+2) en mobile, 1 fila en
+            pantallas más anchas. Touch target ≥ 44×44 WCAG conservado.
+            Etiqueta + tagline arriba clarifican qué hace cada modo. */}
         {onModoChange && (
           <div className="w-full flex flex-col items-center gap-2 mb-1">
-            <div
-              className="w-full flex items-center gap-2 overflow-x-auto snap-x snap-mandatory px-4 -mx-4 py-1 hide-scrollbar"
-            >
+            <p className="text-[9px] font-black tracking-[0.4em] uppercase text-ade-dark/40">
+              Modo de juego
+            </p>
+            <div className="w-full flex items-center justify-center gap-1.5 flex-wrap">
               {MODOS_LIST.map(m => {
                 const activo = m.id === modo;
                 return (
@@ -477,10 +508,9 @@ const Home: React.FC<HomeProps> = ({
                     onClick={() => onModoChange(m.id)}
                     aria-label={`Modo ${m.label}: ${MODOS[m.id].tagline}`}
                     aria-pressed={activo}
-                    className="snap-start shrink-0 px-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 flex items-center justify-center"
+                    className="px-3 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95 flex items-center justify-center"
                     style={{
                       minHeight: '44px',
-                      minWidth: '64px',
                       background: activo
                         ? 'linear-gradient(180deg, #FFE042 0%, #FFD600 100%)'
                         : 'rgba(255, 255, 255, 0.55)',
