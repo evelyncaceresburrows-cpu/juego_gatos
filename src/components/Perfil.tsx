@@ -48,6 +48,29 @@ const Perfil: React.FC<PerfilProps> = ({ onBack }) => {
 
   const perfilVacio = total === 0;
 
+  // Focus Score — investigación TDAH §2: "telemetría continua tipo Focus
+  // Score (replicar del SSME patentado por Akili) reporta progreso al
+  // usuario y permite predecir respuesta clínica". Acá lo computamos
+  // desde sesionesHistorial: mejor sesión de los últimos 7 días + promedio.
+  // Self-comparison (SDT competence), no leaderboard.
+  const hoyMs = Date.now();
+  const SIETE_DIAS_MS = 7 * 24 * 60 * 60 * 1000;
+  const sesionesUlt7 = perfil.sesionesHistorial.filter(s => {
+    const fecha = new Date(s.fecha + 'T00:00:00').getTime();
+    return hoyMs - fecha <= SIETE_DIAS_MS;
+  });
+  const capsPorSesion = sesionesUlt7.map(s =>
+    ORDEN_MODOS.reduce((acc, m) => acc + (s.capturas[m] || 0), 0)
+  );
+  const mejorSesion7d = capsPorSesion.length ? Math.max(...capsPorSesion) : 0;
+  const promedioSesion7d = capsPorSesion.length
+    ? Math.round(capsPorSesion.reduce((a, b) => a + b, 0) / capsPorSesion.length)
+    : 0;
+  const diasUlt30 = perfil.sesionesHistorial.filter(s => {
+    const fecha = new Date(s.fecha + 'T00:00:00').getTime();
+    return hoyMs - fecha <= 30 * 24 * 60 * 60 * 1000;
+  }).length;
+
   return (
     <div
       className="min-h-screen-safe pb-safe pt-safe flex flex-col text-white"
@@ -139,6 +162,50 @@ const Perfil: React.FC<PerfilProps> = ({ onBack }) => {
               })}
             </div>
           </section>
+
+          {/* 2.5 FOCUS SCORE — métricas derivadas estilo Akili SSME.
+              Comparación contra uno mismo (SDT competence), no contra otros.
+              Métrica acumulativa "X de últimos 30 días" en vez de racha
+              consecutiva — investigación TDAH §4 anti-streak-rigidity. */}
+          {mejorSesion7d > 0 && (
+            <section
+              className="rounded-2xl p-5"
+              style={{
+                background: 'rgba(255, 214, 0, 0.06)',
+                border: '1px solid rgba(255, 214, 0, 0.18)',
+              }}
+            >
+              <p className="text-[10px] font-black tracking-[0.3em] uppercase mb-4 text-white/40">
+                Focus
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-col gap-1">
+                  <span className="text-3xl font-black" style={{ color: '#FFD600' }}>
+                    {mejorSesion7d}
+                  </span>
+                  <span className="text-[10px] text-white/55 uppercase tracking-wider leading-tight">
+                    Tu mejor sesión<br/>(últ. 7 días)
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-3xl font-black" style={{ color: '#FFD600' }}>
+                    {promedioSesion7d}
+                  </span>
+                  <span className="text-[10px] text-white/55 uppercase tracking-wider leading-tight">
+                    Promedio<br/>por sesión
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-3xl font-black" style={{ color: '#FFD600' }}>
+                    {diasUlt30}
+                  </span>
+                  <span className="text-[10px] text-white/55 uppercase tracking-wider leading-tight">
+                    Días<br/>en últ. 30
+                  </span>
+                </div>
+              </div>
+            </section>
+          )}
 
           {/* 3. ÚLTIMA LECTURA DE ADE — fondo oscuro, texto amarillo, borde sutil */}
           {fraseAde && (

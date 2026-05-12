@@ -116,7 +116,7 @@ export const MODOS: Record<ModoJuegoId, ModoJuego> = {
   ansiedad: {
     id: 'ansiedad',
     label: 'Ansiedad',
-    tagline: 'Respira. Mira. Suelta.',
+    tagline: 'Respirá. Mirá. Soltá.',
     palabras: PALABRAS_ANSIEDAD,
   },
   decisiones: {
@@ -233,30 +233,38 @@ export const FRASES_POR_MODO: Record<ModoJuegoId, FrasesPorContexto> = {
     ],
   },
   ansiedad: {
+    // Investigación TDAH §3 — "grieta del español": no existe app TDAH
+    // que incorpore chilenismos. Acá los usamos con cuidado, sin caer en
+    // parodia. "po", "dale", "tranqui" funcionan en tono suave; evitamos
+    // "cachái" (muy específico), "fome" y "lata" (negativos).
     inicio: [
-      'Respira. Estoy aquí.',
-      'Sin apuro hoy.',
-      'Vuelves. Bien.',
+      'Respirá. Acá estoy.',
+      'Sin apuro hoy po.',
+      'Volvés. Bien.',
       'Ya estás.',
+      'Despacito.',
     ],
     captura: [
-      'Bien. Una más.',
+      'Bien. Una más, dale.',
       'Lo viste.',
-      'Tranquilo.',
+      'Tranqui.',
       'Ahí está.',
       'Sin presión.',
+      'Eso po.',
     ],
     fin: [
-      'Cerramos suave.',
-      'Bastó por hoy.',
-      'Vuelve cuando quieras.',
+      'Cerramos tranqui.',
+      'Bastó por hoy po.',
+      'Volvé cuando quieras.',
       'Lo hiciste.',
+      'Suficiente.',
     ],
     idea: [
-      'Suéltala.',
+      'Soltala.',
       'Ya está afuera.',
       'Eso pesaba.',
-      'Respira. Anotaste.',
+      'Respirá. Anotaste.',
+      'Liviano ahora.',
     ],
   },
   decisiones: {

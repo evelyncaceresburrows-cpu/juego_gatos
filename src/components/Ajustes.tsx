@@ -13,7 +13,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Volume2, VolumeX, Activity, Trash2, ExternalLink } from 'lucide-react';
+import { ChevronLeft, Volume2, VolumeX, Activity, Trash2, ExternalLink, Clock } from 'lucide-react';
 import { isMuted, setMuted } from '../lib/sound';
 import { setReducedMotionOverride, useReducedMotion } from '../lib/useReducedMotion';
 
@@ -29,6 +29,26 @@ const Ajustes: React.FC<AjustesProps> = ({ onBack }) => {
   const reducedMotion = useReducedMotion();
   const [confirmReset, setConfirmReset] = useState(false);
   const [resetDone, setResetDone] = useState(false);
+  // Sesión extendida — investigación TDAH §1 (Mawjee 2015 valida
+  // micro-sesiones cortas; usuarios en flow piden más). Default 30s,
+  // opcional 60s. Persiste en localStorage.
+  const [extendedSesion, setExtendedSesion] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('ade_sesion_duracion') === '60';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleExtendedSesion = () => {
+    const next = !extendedSesion;
+    setExtendedSesion(next);
+    try {
+      localStorage.setItem('ade_sesion_duracion', next ? '60' : '30');
+    } catch {
+      /* ignorar */
+    }
+  };
 
   const toggleMuted = () => {
     const next = !muted;
@@ -56,6 +76,7 @@ const Ajustes: React.FC<AjustesProps> = ({ onBack }) => {
         'ade_sound_muted',
         'ade_reduced_motion',
         'ade_onboarding_done',
+        'ade_sesion_duracion',
       ];
       keys.forEach(k => localStorage.removeItem(k));
       setResetDone(true);
@@ -149,6 +170,40 @@ const Ajustes: React.FC<AjustesProps> = ({ onBack }) => {
             </p>
           </div>
           <Toggle on={reducedMotion} />
+        </button>
+
+        {/* SESIÓN EXTENDIDA — investigación TDAH §1: Mawjee 2015 valida
+            sesiones cortas, pero algunos usuarios en flow piden más.
+            Default 30s, opcional 60s. La sesión corta sigue siendo el
+            value-prop canónico — solo abrimos la puerta. */}
+        <button
+          onClick={toggleExtendedSesion}
+          className="flex items-center gap-4 p-4 rounded-2xl transition-all active:scale-[0.99]"
+          style={{
+            background: 'rgba(255, 255, 255, 0.5)',
+            border: '1px solid rgba(26, 35, 50, 0.08)',
+          }}
+        >
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{
+              background: extendedSesion
+                ? 'rgba(176, 136, 255, 0.18)'
+                : 'rgba(26,35,50,0.06)',
+            }}
+          >
+            <Clock
+              className="w-5 h-5"
+              style={{ color: extendedSesion ? '#B088FF' : 'rgba(26,35,50,0.45)' }}
+            />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-sm font-black uppercase tracking-wide">Sesión extendida</p>
+            <p className="text-[11px] italic text-ade-dark/55 mt-0.5">
+              {extendedSesion ? '60 segundos por ronda' : '30 segundos (default)'}
+            </p>
+          </div>
+          <Toggle on={extendedSesion} />
         </button>
 
         {/* RESET PERFIL */}

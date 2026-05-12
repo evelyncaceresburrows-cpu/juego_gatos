@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Sparkles, Crown, Book, Settings, Flame, X } from 'lucide-react';
+import { Play, Sparkles, Crown, Book, Settings, Flame, X, Wind } from 'lucide-react';
+import Respiro from './Respiro';
 import { ASSETS } from '../lib/assets';
 import { getFraseAde, getPerfilCompleto } from '../systems/adeProfile';
 import { MODOS, MODOS_LIST, type ModoJuegoId } from '../systems/modos';
@@ -79,6 +80,9 @@ const Home: React.FC<HomeProps> = ({
   // que aún no estaba en logrados se agrega y se devuelve. Si hay alguno
   // sin celebrar todavía, mostramos un overlay festivo (una sola vez).
   const [unlockACelebrar, setUnlockACelebrar] = useState<UnlockDef | null>(null);
+  // Mini-modo respiro 30s — investigación TDAH §6 (Tinello 2021 + Laborde
+  // 2022). Solo visible cuando modo === 'ansiedad'. Sin claims clínicos.
+  const [showRespiro, setShowRespiro] = useState(false);
   useEffect(() => {
     const nuevos = checkUnlocksNuevos(racha);
     const yaCelebrados = getUnlocksCelebrados();
@@ -506,6 +510,27 @@ const Home: React.FC<HomeProps> = ({
             >
               {MODOS[modo].tagline}
             </motion.p>
+
+            {/* Botón Respiro — solo en modo Ansiedad. Investigación
+                TDAH §6: HRV biofeedback / respiración pausada con mejor
+                relación costo-evidencia. 30s, sin claims clínicos. */}
+            {modo === 'ansiedad' && (
+              <motion.button
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                onClick={() => setShowRespiro(true)}
+                className="mt-1 flex items-center gap-2 px-4 min-h-[44px] rounded-full text-[10px] font-black uppercase tracking-widest active:scale-95 transition-transform"
+                style={{
+                  background: 'rgba(176, 136, 255, 0.12)',
+                  border: '1px solid rgba(176, 136, 255, 0.35)',
+                  color: '#7B5CE0',
+                }}
+              >
+                <Wind className="w-3.5 h-3.5" />
+                <span>Respiro · 30s</span>
+              </motion.button>
+            )}
           </div>
         )}
 
@@ -701,6 +726,11 @@ const Home: React.FC<HomeProps> = ({
           100% { transform: translateX(100%); }
         }
       `}</style>
+
+      {/* Overlay Respiro — solo modo Ansiedad. 30s HRV breathing. */}
+      <AnimatePresence>
+        {showRespiro && <Respiro onClose={() => setShowRespiro(false)} />}
+      </AnimatePresence>
     </div>
   );
 };

@@ -28,30 +28,58 @@ interface Step {
 
 const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   const [step, setStep] = useState(0);
+  // Investigación TDAH (decisión #9 del informe): "demo de mecánica core
+  // ejecutada, no tutorial pasivo". El paso 1 ahora EXIGE tap real sobre
+  // la chispa — no avanza con "Siguiente" hasta que el usuario captura.
+  // Es el primer "aha" ejecutado, no descrito.
+  const [tapped, setTapped] = useState(false);
+
+  const advanceFromTap = () => {
+    if (step === 0 && !tapped) {
+      setTapped(true);
+      // Auto-advance a paso 2 tras un beat visual.
+      setTimeout(() => setStep(1), 450);
+    }
+  };
 
   const steps: Step[] = [
     {
-      copy: 'Toca las chispas.',
+      copy: tapped ? 'Eso. Así de simple.' : 'Toca la chispa.',
       render: () => (
-        <div className="relative w-48 h-48 flex items-center justify-center">
+        <button
+          onClick={advanceFromTap}
+          aria-label="Chispa de práctica — tocá para capturar"
+          className="relative w-48 h-48 flex items-center justify-center bg-transparent border-0 cursor-pointer"
+          style={{ outline: 'none' }}
+        >
           <motion.div
-            className="absolute rounded-full"
+            className="absolute rounded-full pointer-events-none"
             style={{
               width: '64px',
               height: '64px',
               background: '#FFD740',
               boxShadow: '0 0 24px rgba(255, 215, 64, 0.6)',
             }}
-            animate={{ scale: [1, 1.15, 1], opacity: [0.85, 1, 0.85] }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+            animate={
+              tapped
+                ? { scale: [1, 1.8, 0], opacity: [1, 0.6, 0] }
+                : { scale: [1, 1.15, 1], opacity: [0.85, 1, 0.85] }
+            }
+            transition={
+              tapped
+                ? { duration: 0.4, ease: 'easeOut' }
+                : { duration: 1.4, repeat: Infinity, ease: 'easeInOut' }
+            }
           />
-          <motion.div
-            className="absolute"
-            style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(26,35,50,0.85)' }}
-            animate={{ x: [-30, 0, -30], y: [30, 0, 30], opacity: [0, 1, 0] }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        </div>
+          {!tapped && (
+            <motion.div
+              className="absolute pointer-events-none"
+              style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(26,35,50,0.85)' }}
+              animate={{ x: [-30, 0, -30], y: [30, 0, 30], opacity: [0, 1, 0] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          )}
+        </button>
       ),
     },
     {
@@ -157,19 +185,28 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             />
           ))}
         </div>
-        <button
-          onClick={advance}
-          className="w-full py-4 rounded-full font-black uppercase tracking-wider text-base active:scale-[0.97] transition-transform"
-          style={{
-            background:
-              'linear-gradient(180deg, #FFE042 0%, #FFD600 50%, #F5C600 100%)',
-            color: '#1A1A1A',
-            boxShadow:
-              '0 6px 0 rgba(150, 110, 0, 0.18), 0 12px 24px rgba(255, 214, 0, 0.4)',
-          }}
-        >
-          {isLast ? 'Empezar' : 'Siguiente'}
-        </button>
+        {/* Paso 0 sin tap: ocultamos el CTA. El usuario DEBE tocar la
+            chispa — eso es el primer aha. Una vez tocada, el botón
+            "Siguiente" aparece (ya estará en step 1). */}
+        {step === 0 && !tapped ? (
+          <p className="text-[11px] italic text-ade-dark/45 text-center min-h-[44px] flex items-center">
+            Tocá la chispa para seguir
+          </p>
+        ) : (
+          <button
+            onClick={advance}
+            className="w-full py-4 rounded-full font-black uppercase tracking-wider text-base active:scale-[0.97] transition-transform"
+            style={{
+              background:
+                'linear-gradient(180deg, #FFE042 0%, #FFD600 50%, #F5C600 100%)',
+              color: '#1A1A1A',
+              boxShadow:
+                '0 6px 0 rgba(150, 110, 0, 0.18), 0 12px 24px rgba(255, 214, 0, 0.4)',
+            }}
+          >
+            {isLast ? 'Empezar' : 'Siguiente'}
+          </button>
+        )}
       </div>
     </motion.div>
   );

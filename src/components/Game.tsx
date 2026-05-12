@@ -134,7 +134,19 @@ const Game: React.FC<GameProps> = ({ onEnd, modo = 'creatividad' }) => {
   const modoLabel = MODOS[modo].label;
 
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
+  // Duración de sesión leída de localStorage. Investigación TDAH §1
+  // (Mawjee 2015): micro-sesiones validadas; algunos usuarios en flow
+  // quieren más. Default 30s (canónico ADE). Extendida 60s opcional via
+  // Ajustes. localStorage key: ade_sesion_duracion ('30' | '60').
+  const sesionDuracion = (() => {
+    try {
+      const v = localStorage.getItem('ade_sesion_duracion');
+      return v === '60' ? 60 : 30;
+    } catch {
+      return 30;
+    }
+  })();
+  const [timeLeft, setTimeLeft] = useState(sesionDuracion);
   const [combo, setCombo] = useState(1);
   const [sparks, setSparks] = useState<Spark[]>([]);
   // Estado cognitivo de Ade — base del gameplay es 'scan' (anticipación,
