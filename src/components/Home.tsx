@@ -167,37 +167,43 @@ const Home: React.FC<HomeProps> = ({
       </div>
 
       {/* ── Top nav — feedback usuario: Home era muy largo en iPhone.
-          Consolida los 4 accesos secundarios (Manual, Bitácora, Perfil,
-          Ajustes) en una fila compacta arriba. Reemplaza:
-            - botón "?" antes absolute top-left
-            - botón Crown antes absolute top-right
-            - fila grande "Bitácora + Ajustes" antes abajo
-          Resultado: menos scroll vertical, navegación visible siempre. */}
+          Consolida los 4 accesos (Manual, Bitácora, Perfil, Ajustes) en
+          una barra clara arriba. Contenedor con fondo glass para que se
+          lea como menú, no como decoración suelta. Sticky top-0 con z-40
+          para mantenerse visible al hacer scroll. */}
       <motion.nav
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="relative z-30 flex items-center justify-between w-full px-2 mb-2"
+        className="sticky top-2 z-40 w-full flex items-center justify-around gap-2 px-3 py-2 rounded-2xl"
+        style={{
+          background: 'rgba(255, 255, 255, 0.75)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(26, 35, 50, 0.08)',
+          boxShadow:
+            '0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 4px 14px rgba(0, 0, 0, 0.06)',
+        }}
       >
         {onManual && (
-          <NavIconButton onClick={onManual} ariaLabel="¿Cómo se juega?">
-            <span className="text-base font-black text-ade-dark/65">?</span>
-          </NavIconButton>
+          <NavMenuItem onClick={onManual} label="Manual" ariaLabel="¿Cómo se juega?">
+            <span className="text-xl font-black text-ade-dark">?</span>
+          </NavMenuItem>
         )}
-        <NavIconButton onClick={onJournal} ariaLabel="Bitácora">
-          <Book className="w-[18px] h-[18px] text-ade-dark/65" />
-        </NavIconButton>
+        <NavMenuItem onClick={onJournal} label="Bitácora" ariaLabel="Bitácora">
+          <Book className="w-5 h-5 text-ade-dark" />
+        </NavMenuItem>
         {onPerfil && (
-          <NavIconButton onClick={onPerfil} ariaLabel="Perfil creativo">
-            <Crown className="w-[18px] h-[18px]" style={{ color: '#F5C400', fill: '#FFD600' }} />
-          </NavIconButton>
+          <NavMenuItem onClick={onPerfil} label="Perfil" ariaLabel="Perfil creativo">
+            <Crown className="w-5 h-5" style={{ color: '#F5C400', fill: '#FFD600' }} />
+          </NavMenuItem>
         )}
-        <NavIconButton
+        <NavMenuItem
           onClick={() => (onAjustes ? onAjustes() : showToast('Ajustes. Pronto.'))}
+          label="Ajustes"
           ariaLabel="Ajustes"
         >
-          <Settings className="w-[18px] h-[18px] text-ade-dark/65" />
-        </NavIconButton>
+          <Settings className="w-5 h-5 text-ade-dark" />
+        </NavMenuItem>
       </motion.nav>
 
 
@@ -710,30 +716,26 @@ const Home: React.FC<HomeProps> = ({
   );
 };
 
-// Botón de ícono uniforme para la nav superior. Touch target 44x44 WCAG,
-// fondo translúcido glass para integrarse con el fondo crema.
-const NavIconButton: React.FC<{
+// Ítem de menú con ícono + label. Touch target ≥44x44, label hace evidente
+// que cada cosa es un botón (resuelve "no se ve" — antes solo había íconos).
+const NavMenuItem: React.FC<{
   onClick: () => void;
   ariaLabel: string;
+  label: string;
   children: React.ReactNode;
-}> = ({ onClick, ariaLabel, children }) => (
+}> = ({ onClick, ariaLabel, label, children }) => (
   <motion.button
-    whileHover={{ scale: 1.06 }}
-    whileTap={{ scale: 0.92 }}
+    whileHover={{ scale: 1.04 }}
+    whileTap={{ scale: 0.94 }}
     onClick={onClick}
     aria-label={ariaLabel}
-    className="flex items-center justify-center rounded-full"
-    style={{
-      width: '44px',
-      height: '44px',
-      background: 'rgba(255, 255, 255, 0.55)',
-      backdropFilter: 'blur(8px)',
-      border: '1px solid rgba(26, 35, 50, 0.08)',
-      boxShadow:
-        '0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 2px 6px rgba(0, 0, 0, 0.05)',
-    }}
+    className="flex-1 flex flex-col items-center justify-center gap-0.5 rounded-xl active:bg-ade-dark/5 transition-colors"
+    style={{ minHeight: '44px', padding: '6px 4px' }}
   >
     {children}
+    <span className="text-[9px] font-black tracking-wider uppercase text-ade-dark/70 leading-none">
+      {label}
+    </span>
   </motion.button>
 );
 
