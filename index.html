@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <!-- Sin maximum-scale: bloquearlo viola WCAG 2.1 criterio 1.4.4 (zoom).
+         user-scalable=yes (default) preserva el control del usuario. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#FBF1D8" />
 
     <!-- PWA — auditoría §3.8. Manifest + iOS standalone meta tags.
@@ -15,17 +17,20 @@
     <meta name="apple-mobile-web-app-title" content="ADE" />
     <meta name="mobile-web-app-capable" content="yes" />
 
-    <!-- ─── Meta básicos ───────────────────────────────────────────── -->
-    <title>ADE — el gato que caza ideas</title>
-    <meta name="description" content="Un gato que juega contigo 30 segundos para ayudarte a pensar mejor. Captura chispas, fusiona ideas, descubre tu modo creativo." />
+    <!-- ─── Meta básicos ─────────────────────────────────────────────
+         El claim concreto es "30 segundos". Va en title + description.
+         Evitamos verbos con peso clínico ("trata", "cura", "reduce"):
+         ADE es wellness, no DTx. Verbos OK: juega, captura, observa. -->
+    <title>ADE — 30 segundos para tu próxima idea</title>
+    <meta name="description" content="ADE es un juego de 30 segundos. Un gato caza ideas contigo y al final te lee. Sin cuenta, sin nube — todo vive en tu dispositivo." />
     <link rel="canonical" href="https://juego-gatos.vercel.app/" />
     <meta name="robots" content="index, follow" />
 
     <!-- ─── Open Graph (Facebook, WhatsApp, iMessage, LinkedIn) ────── -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://juego-gatos.vercel.app/" />
-    <meta property="og:title" content="ADE — el gato que caza ideas" />
-    <meta property="og:description" content="Un gato que juega contigo 30 segundos para ayudarte a pensar mejor. Captura chispas, fusiona ideas, descubre tu modo creativo." />
+    <meta property="og:title" content="ADE — 30 segundos para tu próxima idea" />
+    <meta property="og:description" content="Un juego de 30 segundos. Ade caza ideas contigo y al final te lee. Sin cuenta, sin nube." />
     <meta property="og:image" content="https://juego-gatos.vercel.app/og-image.png" />
     <meta property="og:image:secure_url" content="https://juego-gatos.vercel.app/og-image.png" />
     <meta property="og:image:type" content="image/png" />
@@ -37,13 +42,29 @@
 
     <!-- ─── Twitter / X ────────────────────────────────────────────── -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ADE — el gato que caza ideas" />
-    <meta name="twitter:description" content="Un gato que juega contigo 30 segundos para ayudarte a pensar mejor. Captura chispas, fusiona ideas, descubre tu modo creativo." />
+    <meta name="twitter:title" content="ADE — 30 segundos para tu próxima idea" />
+    <meta name="twitter:description" content="Un juego de 30 segundos. Ade caza ideas contigo y al final te lee. Sin cuenta, sin nube." />
     <meta name="twitter:image" content="https://juego-gatos.vercel.app/og-image.png" />
     <meta name="twitter:image:alt" content="Ade, gato dorado con manchas, sentado sobre fondo crema" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Fallback indexable + accesibilidad sin JS.
+           Crawlers que no ejecutan JS (Bing legacy, Facebook share preview,
+           algunos lectores RSS) y usuarios con JS bloqueado leen esto.
+           Googlebot SÍ ejecuta JS pero un fallback estático también
+           mejora First Contentful Paint y le da algo que decir a un
+           screen reader durante el chunk de Home cargando. -->
+      <noscript>
+        <main style="max-width: 540px; margin: 4rem auto; padding: 2rem; font-family: system-ui, sans-serif; color: #1A2332; background: #FBF1D8;">
+          <h1>ADE — 30 segundos para tu próxima idea</h1>
+          <p><strong>Ade es un gato que caza ideas contigo.</strong></p>
+          <p>Cada sesión dura 30 segundos. Tocás chispas, Ade fusiona, al final te lee. Sin cuenta, sin nube — todo lo que captures vive en tu dispositivo.</p>
+          <p>Para jugar necesitás JavaScript habilitado. Activalo y recargá la página.</p>
+          <p style="opacity: 0.6; font-size: 0.85em; margin-top: 2rem;">ADE es un juego de pensamiento creativo. No es una herramienta médica ni reemplaza atención profesional.</p>
+        </main>
+      </noscript>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

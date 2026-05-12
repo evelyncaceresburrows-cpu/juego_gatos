@@ -187,15 +187,31 @@ export function registrarCaptura(tipo: string, velocidadMs: number): void {
   p.historial.push(t);
   if (p.historial.length > 20) p.historial = p.historial.slice(-20);
 
-  // Sesiones y racha: día único = nueva sesión.
+  // Sesiones y racha. Investigación TDAH (Westwood JAMA 2025, comunidades
+  // TDAH Reddit/Calmevo): streaks estrictamente consecutivos producen
+  // "ADHD guilt spiral" y abandono. ADE aplica un freeze day automático
+  // — si saltas 1 día, la racha sigue. Si saltas 2+, recién entonces se
+  // reinicia. Sin UI explícita: el usuario nunca ve "racha congelada",
+  // solo nota que un día perdido no la rompió.
   const ahora = new Date();
   const hoyISO = ahora.toISOString().slice(0, 10);
   const ultISO = p.ultimaSesion ? p.ultimaSesion.slice(0, 10) : '';
   if (ultISO !== hoyISO) {
-    const ayer = new Date(ahora);
-    ayer.setDate(ayer.getDate() - 1);
-    const ayerISO = ayer.toISOString().slice(0, 10);
-    p.racha = ultISO === ayerISO ? (p.racha || 0) + 1 : 1;
+    // Calcular gap en días entre última sesión y hoy.
+    let gap = Infinity;
+    if (ultISO) {
+      const ult = new Date(ultISO + 'T00:00:00');
+      const hoy = new Date(hoyISO + 'T00:00:00');
+      gap = Math.round((hoy.getTime() - ult.getTime()) / (1000 * 60 * 60 * 24));
+    }
+    // gap === 1 → ayer, racha continúa
+    // gap === 2 → saltó 1 día, freeze day aplicado, racha sigue
+    // gap >= 3 → ruptura real, vuelve a 1
+    if (gap === 1 || gap === 2) {
+      p.racha = (p.racha || 0) + 1;
+    } else {
+      p.racha = 1;
+    }
     p.sesiones = (p.sesiones || 0) + 1;
   }
   p.ultimaSesion = ahora.toISOString();
@@ -274,6 +290,25 @@ export function getFraseAde(contexto: Contexto): string {
   // disparador es real, solo la forma cambió a estilo Ade.
   switch (contexto) {
     case 'inicio': {
+      // Investigación TDAH: re-engagement sin culpa. Si el usuario vuelve
+      // tras 7+ días, NO mostramos triggers de "rompiste racha". Mostramos
+      // bienvenida suave que invita a empezar pequeño. (Calmevo + Inflow
+      // patterns: validation + understanding, not blame.) Calcular aquí
+      // antes de los otros triggers para que tome prioridad.
+      if (p.ultimaSesion) {
+        const ahoraMs = Date.now();
+        const ultMs = new Date(p.ultimaSesion).getTime();
+        const diasAusencia = Math.floor((ahoraMs - ultMs) / (1000 * 60 * 60 * 24));
+        if (diasAusencia >= 7) {
+          const pool = [
+            'Han pasado días. ¿Empezamos con algo pequeño?',
+            'Vuelves. Bien.',
+            'Algo cambia cada vez.',
+            'Aquí estabas. Aquí sigues.',
+          ];
+          return pool[Math.floor(Math.random() * pool.length)];
+        }
+      }
       // Fase 3.2: si el usuario desbloqueó la 'frase_secreta' (D14+),
       // hay 1/3 de probabilidad de devolver una del pool especial.
       // No reemplaza los disparadores normales — solo los enriquece.
@@ -339,7 +374,7 @@ export function getFraseAde(contexto: Contexto): string {
       if (tiposUsados.length === 1 && total > 3)
         return `Solo ${tiposUsados[0].toUpperCase()} hoy. Una sola frecuencia.`;
       if (p.ideasGuardadas === 0 && total > 0)
-        return `${total} chispas. Cero ideas. Pena.`;
+        return `${total} chispas. Sin guardar. Algo se escapó.`;
       if (velProm > 0 && velProm < 700 && total > 8)
         return 'Velocidad alta. Modo survival.';
       if (p.racha >= 3)

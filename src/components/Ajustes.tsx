@@ -217,6 +217,71 @@ const Ajustes: React.FC<AjustesProps> = ({ onBack }) => {
             </p>
           )}
         </div>
+
+        {/* PRIVACIDAD — Ley 21.719 + investigación TDAH (privacy by design).
+            ADE no envía datos a servidor. Todo vive en localStorage del
+            dispositivo. Diferenciador real vs. Inflow/Headspace cloud-first. */}
+        <div
+          className="flex items-start gap-4 p-4 rounded-2xl"
+          style={{
+            background: 'rgba(255, 255, 255, 0.5)',
+            border: '1px solid rgba(26, 35, 50, 0.08)',
+          }}
+        >
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(64, 196, 255, 0.12)' }}
+          >
+            <span className="text-base">🔒</span>
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-black uppercase tracking-wide">Privacidad</p>
+            <p className="text-[11px] italic text-ade-dark/65 mt-1 leading-relaxed">
+              Todo lo que captures vive solo en este dispositivo. ADE no
+              envía nada a ningún servidor, no pide cuenta, no usa cookies
+              de tracking. Borrá el navegador y desaparece todo.
+            </p>
+          </div>
+        </div>
+
+        {/* SI NECESITÁS MÁS — escalado humano. La investigación clínica
+            (Westwood JAMA 2025, prevalencia ansiedad ≈50% en TDAH adulto)
+            obliga a tener salida explícita hacia profesional. Discreto,
+            sin alarmar — solo visible si lo buscás. Líneas chilenas. */}
+        <div
+          className="flex items-start gap-4 p-4 rounded-2xl"
+          style={{
+            background: 'rgba(255, 255, 255, 0.5)',
+            border: '1px solid rgba(26, 35, 50, 0.08)',
+          }}
+        >
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(176, 136, 255, 0.12)' }}
+          >
+            <span className="text-base">💬</span>
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-black uppercase tracking-wide">Si necesitás más</p>
+            <p className="text-[11px] italic text-ade-dark/65 mt-1 leading-relaxed">
+              ADE es un juego. Si estás pasando algo difícil, hay personas que escuchan:
+            </p>
+            <div className="mt-2 flex flex-col gap-1 text-[11px]">
+              <a
+                href="tel:6003607777"
+                className="font-bold text-ade-dark/80 hover:text-ade-dark transition-colors"
+              >
+                Salud Responde · 600 360 7777
+              </a>
+              <a
+                href="tel:1515"
+                className="font-bold text-ade-dark/80 hover:text-ade-dark transition-colors"
+              >
+                Línea Libre · 1515
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Footer — versión + repo */}
