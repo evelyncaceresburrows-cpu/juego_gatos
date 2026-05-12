@@ -166,59 +166,40 @@ const Home: React.FC<HomeProps> = ({
         ))}
       </div>
 
-      {/* ── Botón corona — refinado con sombra y entrada suave ── */}
-      {onPerfil && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, duration: 0.4 }}
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.92 }}
-          onClick={onPerfil}
-          aria-label="Abrir perfil creativo"
-          className="absolute z-30 flex items-center justify-center"
-          style={{
-            top: '20px',
-            right: '20px',
-            width: '42px',
-            height: '42px',
-            borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.6)',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(245, 196, 0, 0.25)',
-            boxShadow:
-              '0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 4px 12px rgba(0, 0, 0, 0.06), 0 0 16px rgba(245, 196, 0, 0.15)',
-          }}
+      {/* ── Top nav — feedback usuario: Home era muy largo en iPhone.
+          Consolida los 4 accesos secundarios (Manual, Bitácora, Perfil,
+          Ajustes) en una fila compacta arriba. Reemplaza:
+            - botón "?" antes absolute top-left
+            - botón Crown antes absolute top-right
+            - fila grande "Bitácora + Ajustes" antes abajo
+          Resultado: menos scroll vertical, navegación visible siempre. */}
+      <motion.nav
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="relative z-30 flex items-center justify-between w-full px-2 mb-2"
+      >
+        {onManual && (
+          <NavIconButton onClick={onManual} ariaLabel="¿Cómo se juega?">
+            <span className="text-base font-black text-ade-dark/65">?</span>
+          </NavIconButton>
+        )}
+        <NavIconButton onClick={onJournal} ariaLabel="Bitácora">
+          <Book className="w-[18px] h-[18px] text-ade-dark/65" />
+        </NavIconButton>
+        {onPerfil && (
+          <NavIconButton onClick={onPerfil} ariaLabel="Perfil creativo">
+            <Crown className="w-[18px] h-[18px]" style={{ color: '#F5C400', fill: '#FFD600' }} />
+          </NavIconButton>
+        )}
+        <NavIconButton
+          onClick={() => (onAjustes ? onAjustes() : showToast('Ajustes. Pronto.'))}
+          ariaLabel="Ajustes"
         >
-          <Crown className="w-5 h-5" style={{ color: '#F5C400', fill: '#FFD600' }} />
-        </motion.button>
-      )}
+          <Settings className="w-[18px] h-[18px] text-ade-dark/65" />
+        </NavIconButton>
+      </motion.nav>
 
-      {/* Botón "?" — manual / cómo se juega. Discoverable para usuarios
-          nuevos (especialmente TDAH) sin saturar la pantalla. */}
-      {onManual && (
-        <motion.button
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.92 }}
-          onClick={onManual}
-          aria-label="¿Cómo se juega? Manual"
-          className="absolute z-30 flex items-center justify-center"
-          style={{
-            top: '20px',
-            left: '20px',
-            width: '42px',
-            height: '42px',
-            borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.6)',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(26, 35, 50, 0.1)',
-            boxShadow:
-              '0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 4px 12px rgba(0, 0, 0, 0.06)',
-          }}
-        >
-          <span className="text-lg font-black text-ade-dark/65">?</span>
-        </motion.button>
-      )}
 
       {/* ── Brand Header — más sólido, mejor jerarquía ── */}
       <motion.div
@@ -604,44 +585,8 @@ const Home: React.FC<HomeProps> = ({
           />
         </motion.button>
 
-        {/* Bloques secundarios — ahora con íconos y micro-sombras */}
-        <div className="flex w-full gap-2.5">
-          <motion.button
-            onClick={onJournal}
-            whileHover={{ scale: 1.03, y: -1 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-            className="flex-1 py-3 min-h-[44px] text-ade-dark font-black tracking-widest text-[11px] uppercase rounded-2xl flex items-center justify-center gap-1.5"
-            style={{
-              background: 'rgba(255, 255, 255, 0.6)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(26, 35, 50, 0.08)',
-              boxShadow:
-                '0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 2px 6px rgba(0, 0, 0, 0.05), 0 6px 16px rgba(0, 0, 0, 0.04)',
-            }}
-          >
-            <Book className="w-3.5 h-3.5" />
-            <span>Bitácora</span>
-          </motion.button>
-
-          <motion.button
-            onClick={() => (onAjustes ? onAjustes() : showToast('Ajustes. Pronto.'))}
-            whileHover={{ scale: 1.03, y: -1 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-            className="flex-1 py-3 min-h-[44px] text-ade-dark font-black tracking-widest text-[11px] uppercase rounded-2xl flex items-center justify-center gap-1.5"
-            style={{
-              background: 'rgba(255, 255, 255, 0.6)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(26, 35, 50, 0.08)',
-              boxShadow:
-                '0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 2px 6px rgba(0, 0, 0, 0.05), 0 6px 16px rgba(0, 0, 0, 0.04)',
-            }}
-          >
-            <Settings className="w-3.5 h-3.5" />
-            <span>Ajustes</span>
-          </motion.button>
-        </div>
+        {/* Fila de Bitácora + Ajustes removida — ahora viven en el top nav.
+            Resultado: Home más corto, menos scroll en iPhone. */}
       </motion.div>
 
       {/* ── Overlay de celebración de unlock — Fase 3.2.
@@ -764,5 +709,32 @@ const Home: React.FC<HomeProps> = ({
     </div>
   );
 };
+
+// Botón de ícono uniforme para la nav superior. Touch target 44x44 WCAG,
+// fondo translúcido glass para integrarse con el fondo crema.
+const NavIconButton: React.FC<{
+  onClick: () => void;
+  ariaLabel: string;
+  children: React.ReactNode;
+}> = ({ onClick, ariaLabel, children }) => (
+  <motion.button
+    whileHover={{ scale: 1.06 }}
+    whileTap={{ scale: 0.92 }}
+    onClick={onClick}
+    aria-label={ariaLabel}
+    className="flex items-center justify-center rounded-full"
+    style={{
+      width: '44px',
+      height: '44px',
+      background: 'rgba(255, 255, 255, 0.55)',
+      backdropFilter: 'blur(8px)',
+      border: '1px solid rgba(26, 35, 50, 0.08)',
+      boxShadow:
+        '0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 2px 6px rgba(0, 0, 0, 0.05)',
+    }}
+  >
+    {children}
+  </motion.button>
+);
 
 export default Home;
