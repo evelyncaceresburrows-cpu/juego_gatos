@@ -7,12 +7,12 @@
 // ejecutiva). Respiración pausada ~6 rpm (Laborde 2022) muestra mejoras
 // agudas en Stroop, operation span y WCST tras UNA sola sesión 3×5 min.
 //
-// Acá vamos más cortos: 30s, 3 ciclos de ~10s (5s inhalar + 5s exhalar).
+// Aquí vamos más cortos: 30s, 3 ciclos de ~10s (5s inhalar + 5s exhalar).
 // Sin cámara, sin PPG, sin claims clínicos. Solo prep cognitivo opcional
 // antes de cazar. Disponible solo desde modo Ansiedad.
 //
 // Pattern visual: orbe que crece de 80 → 220px en 5s, hold breve, cae a
-// 80px en 5s. Texto guía cambia: "Inhalá" → "Soltá".
+// 80px en 5s. Texto guía cambia: "Inhala" → "Suelta".
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -106,7 +106,7 @@ const Respiro: React.FC<RespiroProps> = ({ onClose }) => {
               transition={{ duration: 0.4 }}
               className="mt-12 text-3xl font-black italic uppercase tracking-[0.2em] text-white"
             >
-              {fase === 'inhalar' ? 'Inhalá' : 'Soltá'}
+              {fase === 'inhalar' ? 'Inhala' : 'Suelta'}
             </motion.p>
           </AnimatePresence>
 
@@ -131,7 +131,7 @@ const Respiro: React.FC<RespiroProps> = ({ onClose }) => {
             }}
           />
           <p className="text-2xl font-black italic text-white text-center">
-            Listo. Volvé cuando quieras.
+            Listo. Vuelve cuando quieras.
           </p>
           <button
             onClick={onClose}

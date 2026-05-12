@@ -54,16 +54,16 @@ const FUSIONES_PREMIUM: Record<string, string> = {
   'caos+error':   'Sin reglas. Sin freno.',
 
   // ── eco × * (sin caos, ya cubierto) ──
-  'deseo+eco':    'Lo que querés ya está sonando.',
+  'deseo+eco':    'Lo que quieres ya está sonando.',
   'eco+ritual':   'Repítelo y será verdad.',
   'brillo+eco':   'Idea nueva, voz vieja.',
-  'eco+ruido':    'Mucha gente. Bajá el volumen.',
+  'eco+ruido':    'Mucha gente. Baja el volumen.',
   'eco+secreto':  'Lo no dicho también ecoa.',
   'eco+error':    'Aprende mostrando.',                       // user
 
   // ── deseo × * ──
   'deseo+ritual': 'Quererlo no basta. Hazlo.',
-  'brillo+deseo': 'Lo que más brilla es lo que querés.',
+  'brillo+deseo': 'Lo que más brilla es lo que quieres.',
   'deseo+ruido':  'Querer sin saber qué.',
   'deseo+secreto':'Dilo o muere contigo.',
   'deseo+error':  'Querer mal. A veces ahí está.',
@@ -92,9 +92,9 @@ const FUSIONES_PREMIUM: Record<string, string> = {
 const AUTO_FUSIONES: Record<TipoChispa, string> = {
   caos:    'Doble Caos. Insistes en romper.',
   eco:     'Doble Eco. Lo que dices se repite.',
-  deseo:   'Doble Deseo. Lo querés mucho.',
+  deseo:   'Doble Deseo. Lo quieres mucho.',
   ritual:  'Doble Ritual. La forma te sostiene.',
-  brillo:  'Doble Brillo. Buscás lo nuevo dos veces.',
+  brillo:  'Doble Brillo. Buscas lo nuevo dos veces.',
   ruido:   'Doble Ruido. Hay algo bajo.',
   secreto: 'Doble Secreto. Lo guardas profundo.',
   error:   'Doble Error. Sigue mostrándote algo.',

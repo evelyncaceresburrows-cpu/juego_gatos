@@ -45,6 +45,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   const steps: Step[] = [
     {
       copy: tapped ? 'Eso. Así de simple.' : 'Toca la chispa.',
+
       render: () => (
         <button
           onClick={advanceFromTap}
@@ -190,7 +191,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             "Siguiente" aparece (ya estará en step 1). */}
         {step === 0 && !tapped ? (
           <p className="text-[11px] italic text-ade-dark/45 text-center min-h-[44px] flex items-center">
-            Tocá la chispa para seguir
+            Toca la chispa para seguir
           </p>
         ) : (
           <button

@@ -296,7 +296,7 @@ const FusionRonda: React.FC<FusionRondaProps> = ({ chispas, onSave, onClose, con
                   }}
                 />
                 <p className="text-[10px] text-white/40 italic text-center">
-                  Si no escribís nada, guardamos el insight tal cual.
+                  Si no escribes nada, guardamos el insight tal cual.
                 </p>
               </motion.div>
             </motion.div>

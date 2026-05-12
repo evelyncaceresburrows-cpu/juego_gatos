@@ -259,7 +259,7 @@ const Home: React.FC<HomeProps> = ({
           El gato que caza ideas
         </p>
 
-        {/* Tagline funcional — explica qué hacés en 5 segundos. */}
+        {/* Tagline funcional — explica qué se hace en 5 segundos. */}
         <p className="mt-4 text-ade-dark/65 text-sm font-medium leading-snug max-w-[280px] mx-auto">
           Conecta palabras. Descubre ideas. Juega 30 segundos.
         </p>

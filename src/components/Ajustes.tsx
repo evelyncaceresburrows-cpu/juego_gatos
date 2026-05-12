@@ -295,7 +295,7 @@ const Ajustes: React.FC<AjustesProps> = ({ onBack, onManual }) => {
 
           {resetDone && (
             <p className="text-[11px] italic text-ade-dark/55">
-              Perfil borrado. Volvé a Home para empezar de cero.
+              Perfil borrado. Vuelve a Home para empezar de cero.
             </p>
           )}
         </div>
@@ -344,9 +344,9 @@ const Ajustes: React.FC<AjustesProps> = ({ onBack, onManual }) => {
             <span className="text-base">💬</span>
           </div>
           <div className="flex-1">
-            <p className="text-sm font-black uppercase tracking-wide">Si necesitás más</p>
+            <p className="text-sm font-black uppercase tracking-wide">Si necesitas más</p>
             <p className="text-[11px] italic text-ade-dark/65 mt-1 leading-relaxed">
-              ADE es un juego. Si estás pasando algo difícil, hay personas que escuchan:
+              ADE es un juego. Si estás pasando algo difícil, hay personas que escuchan. Estos números son de Chile:
             </p>
             <div className="mt-2 flex flex-col gap-1 text-[11px]">
               <a

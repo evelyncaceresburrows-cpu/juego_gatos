@@ -65,7 +65,7 @@ const Manual: React.FC<ManualProps> = ({ onBack }) => {
           </p>
           <p className="text-base leading-relaxed">
             ADE es un juego de <strong>30 segundos</strong>. Ade es el gato.
-            Cada partida te genera datos sobre cómo pensás. Con el tiempo,
+            Cada partida genera datos sobre cómo piensas. Con el tiempo,
             esos datos forman un mapa de tu modo mental.
           </p>
           <p className="text-sm leading-relaxed text-ade-dark/70 mt-2 italic">
@@ -82,18 +82,18 @@ const Manual: React.FC<ManualProps> = ({ onBack }) => {
           </div>
           <ol className="flex flex-col gap-2 text-sm leading-relaxed pl-1">
             <li>
-              <strong>1.</strong> Tocás <em>Cazar ahora</em>.
+              <strong>1.</strong> Tocas <em>Cazar ahora</em>.
             </li>
             <li>
               <strong>2.</strong> Aparecen chispas con palabras (Caos, Brillo,
-              Deseo, etc.). Tocalas para capturarlas.
+              Deseo, etc.). Tócalas para capturarlas.
             </li>
             <li>
               <strong>3.</strong> Capturas seguidas suben tu combo. A los 3
-              entrás en <strong>FLOW</strong> (puntos x2).
+              entras en <strong>FLOW</strong> (puntos x2).
             </li>
             <li>
-              <strong>4.</strong> A los 5 capturas del mismo tipo, Ade abre
+              <strong>4.</strong> A las 5 capturas del mismo tipo, Ade abre
               una <strong>fusión</strong>: te muestra una frase combinando
               las chispas.
             </li>
@@ -102,7 +102,7 @@ const Manual: React.FC<ManualProps> = ({ onBack }) => {
             </li>
           </ol>
           <p className="text-xs italic text-ade-dark/55 mt-1">
-            Si querés más tiempo: Ajustes → Sesión extendida (60s).
+            Si quieres más tiempo: Ajustes → Sesión extendida (60s).
           </p>
         </section>
 
@@ -114,13 +114,13 @@ const Manual: React.FC<ManualProps> = ({ onBack }) => {
           </div>
           <p className="text-sm leading-relaxed text-ade-dark/75">
             Los modos cambian el vocabulario de las chispas para que la
-            sesión hable de lo que vos tenés en la cabeza.
+            sesión hable de lo que tú tienes en la cabeza.
           </p>
           <div className="flex flex-col gap-2 mt-1">
             <ModoLine label="Creatividad" desc="Caos, Brillo, Eco. Para pensar sin filtros." />
             <ModoLine label="Negocio" desc="Pivot, Métrica, Insight. Para producto y trabajo." />
             <ModoLine label="Ansiedad" desc="Respirar, Soltar, Pausa. Tono más suave. Suma botón Respiro." />
-            <ModoLine label="Decisiones" desc="Sí, No, Costo, Riesgo. Cuando estás trabado entre opciones." />
+            <ModoLine label="Decisiones" desc="Sí, No, Costo, Riesgo. Cuando estás atascado entre opciones." />
             <ModoLine label="Random" desc="Mezcla de todo." />
           </div>
         </section>
@@ -132,13 +132,13 @@ const Manual: React.FC<ManualProps> = ({ onBack }) => {
             <h3 className="text-sm font-black uppercase tracking-widest">Bitácora</h3>
           </div>
           <p className="text-sm leading-relaxed text-ade-dark/75">
-            Cuando capturás algo que te resonó (típicamente al fusionar),
-            Ade te pregunta si querés guardarlo como idea. Lo escribís
+            Cuando capturas algo que te resonó (típicamente al fusionar),
+            Ade te pregunta si quieres guardarlo como idea. Lo escribes
             en una línea. Eso queda en la Bitácora.
           </p>
           <p className="text-sm leading-relaxed text-ade-dark/75">
             La Bitácora se ve desde Home → Bitácora. Tiene radar de qué
-            tipo de chispa capturás más, tus ideas guardadas, y se puede
+            tipo de chispa capturas más, tus ideas guardadas, y se puede
             exportar a Markdown o PDF.
           </p>
         </section>
@@ -151,7 +151,7 @@ const Manual: React.FC<ManualProps> = ({ onBack }) => {
           </div>
           <p className="text-sm leading-relaxed text-ade-dark/75">
             Después de algunas partidas, Ade detecta tu <em>tipo creativo</em>
-            (el modo que más capturás). Lo ves desde Home → corona arriba
+            (el modo que más capturas). Lo ves desde Home → corona arriba
             o desde la Bitácora.
           </p>
           <p className="text-sm leading-relaxed text-ade-dark/75">
@@ -168,7 +168,7 @@ const Manual: React.FC<ManualProps> = ({ onBack }) => {
             <h3 className="text-sm font-black uppercase tracking-widest">Respiro (opcional)</h3>
           </div>
           <p className="text-sm leading-relaxed text-ade-dark/75">
-            Solo aparece cuando elegís modo Ansiedad. Es un mini-modo de
+            Solo aparece cuando eliges modo Ansiedad. Es un mini-modo de
             30 segundos: 3 ciclos de respiración (5s inhalar, 5s soltar).
             No tiene puntaje. Sirve para bajar revoluciones antes de
             cazar — o en vez de cazar, si hoy no te da.
@@ -179,12 +179,12 @@ const Manual: React.FC<ManualProps> = ({ onBack }) => {
         <section className="flex flex-col gap-3">
           <h3 className="text-sm font-black uppercase tracking-widest">Racha y freeze day</h3>
           <p className="text-sm leading-relaxed text-ade-dark/75">
-            La racha cuenta días que jugaste seguidos. Pero si saltás 1 día
+            La racha cuenta días que jugaste seguidos. Pero si saltas 1 día
             <strong> no se rompe</strong> — hay un freeze day automático.
-            Recién con 3 días sin entrar, vuelve a 1.
+            Solo con 3 días sin entrar, vuelve a 1.
           </p>
           <p className="text-sm leading-relaxed text-ade-dark/75">
-            Tampoco hay drama si la perdés. Tu Bitácora, tus ideas, tu
+            Tampoco hay drama si la pierdes. Tu Bitácora, tus ideas, tu
             perfil — todo sigue ahí. Solo la racha vuelve a cero.
           </p>
         </section>
@@ -203,9 +203,9 @@ const Manual: React.FC<ManualProps> = ({ onBack }) => {
               Privacidad
             </p>
             <p className="text-sm leading-relaxed text-ade-dark/75">
-              Todo lo que capturás vive solo en este dispositivo. ADE no
+              Todo lo que capturas vive solo en este dispositivo. ADE no
               envía nada a ningún servidor, no pide cuenta, no usa cookies
-              de tracking. Borrá el navegador y desaparece todo.
+              de tracking. Borra el navegador y desaparece todo.
             </p>
           </div>
         </section>
@@ -222,15 +222,15 @@ const Manual: React.FC<ManualProps> = ({ onBack }) => {
             ¿Para qué sirve?
           </p>
           <p className="text-sm leading-relaxed">
-            ADE es útil cuando <strong>no sabés qué pensás</strong>. La
+            ADE es útil cuando <strong>no sabes qué piensas</strong>. La
             sesión de 30 segundos te saca de la página en blanco.
-            Las chispas capturadas te muestran tu sesgo (qué buscás,
-            qué evitás). Las fusiones te tiran combinaciones que no se
+            Las chispas capturadas muestran tu sesgo (qué buscas,
+            qué evitas). Las fusiones te tiran combinaciones que no se
             te habrían ocurrido.
           </p>
           <p className="text-sm leading-relaxed mt-2">
-            <strong>No es útil</strong> si querés que algo se haga por vos,
-            si esperás un diagnóstico, o si necesitás un tratamiento.
+            <strong>No es útil</strong> si esperas que algo se haga por ti,
+            si esperas un diagnóstico, o si necesitas un tratamiento.
             Para eso hay profesionales.
           </p>
         </section>
